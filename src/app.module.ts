@@ -19,7 +19,7 @@ import { User } from './users/user.entity';
       password: process.env.POSTGRES_PASSWORD,
       database: process.env.POSTGRES_DB,
       entities: [User],
-      synchronize: true,
+      synchronize: process.env.NODE_ENV === 'production' ? false : true
     }),
     UsersModule,
   ]
