@@ -1,8 +1,11 @@
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
+import { prepareDB } from './db/prepare'
 
 async function start() {
+  await prepareDB()
+
 	const PORT = process.env.PORT || 3000;
 	const app = await NestFactory.create(AppModule);
   

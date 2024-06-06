@@ -5,23 +5,24 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   ManyToMany,
+  JoinTable,
 } from "typeorm";
 import { ApiProperty } from "@nestjs/swagger";
-import { Role } from "src/roles/role.entity";
+import { User } from '../users/user.entity';
 
-@Entity("users")
-export class User {
+@Entity("roles")
+export class Role {
   @ApiProperty({example: 1, description: 'Уникальный идентификатор'})
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ApiProperty({example: 'some@mail.ru', description: 'Уникальная почта пользователя'})
+  @ApiProperty({example: 'USER', description: 'Уникальная роль пользователя'})
   @Column("varchar", { unique: true, length: 50 })
-  email: string;
+  value: string;
 
-  @ApiProperty({example: '!@#$%^&', description: 'Зашифрованный пароль пользователя'})
-  @Column("varchar", { length: 100 })
-  encryptedPassword: string;
+  @ApiProperty({example: 'Роль обычного пользователя', description: 'Описание роли'})
+  @Column("text")
+  description: string;
 
   @ApiProperty({example: '2024-01-01T10:10:10', description: 'Время создания записи'})
 	@CreateDateColumn()
@@ -31,9 +32,7 @@ export class User {
 	@UpdateDateColumn()
 	updatedAt: Date;
 
-  @ApiProperty({type: [Role], description: 'Массив ролей пользователя'})
-  @ManyToMany(() => Role, role => role.users, {
-    eager: true
-  })
-  roles: Role[]
+  @ManyToMany(() => User, user => user.roles)
+  @JoinTable({name: 'users_roles'})
+  users: User[]
 }
