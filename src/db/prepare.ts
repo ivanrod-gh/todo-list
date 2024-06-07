@@ -16,11 +16,18 @@ export async function prepareDB() {
 
   await AppDataSource.initialize();
   const manager = AppDataSource.manager
-  const findedRole = await manager.findOneBy(Role, {value: 'USER'});
+
+  let findedRole = await manager.findOneBy(Role, {value: 'USER'});
   if (!findedRole) {
     const newUser = manager.create(Role, {value: 'USER', description: 'Роль обычного пользователя'});
     await manager.save(newUser);
   }
+  findedRole = await manager.findOneBy(Role, {value: 'ADMIN'});
+  if (!findedRole) {
+    const newUser = manager.create(Role, {value: 'ADMIN', description: 'Роль администратора'});
+    await manager.save(newUser);
+  }
+
   await AppDataSource.destroy();
 }
 
