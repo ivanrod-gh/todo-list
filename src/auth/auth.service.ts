@@ -35,7 +35,7 @@ export class AuthService {
     if (user && paswordIsCorrect) {
       return user;
     }
-    throw new UnauthorizedException({message: 'Некорректная почта или пароль'});
+    throw new UnauthorizedException({ message: 'Некорректная почта или пароль' });
   }
 
   private async generateToken(user: User): Promise<ResponseToken> {

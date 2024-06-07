@@ -1,8 +1,9 @@
-import { Controller, Get, Post, Body } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from "./dto/create-user.dto";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { User } from './user.entity';
+import { JWTAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @ApiTags('Пользователи')
 @Controller('api/users')
@@ -12,6 +13,7 @@ export class UsersController {
 
   @ApiOperation({summary: 'Создание пользователя'})
   @ApiResponse({status: 200, type: User})
+  @UseGuards(JWTAuthGuard)
   @Post()
   create(@Body() userDto: CreateUserDto) {
     return this.usersService.create(userDto);
@@ -19,6 +21,7 @@ export class UsersController {
 
   @ApiOperation({summary: 'Получить всех пользователей'})
   @ApiResponse({status: 200, type: [User]})
+  @UseGuards(JWTAuthGuard)
   @Get()
   getAll() {
     return this.usersService.getAll();
