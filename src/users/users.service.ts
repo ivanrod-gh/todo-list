@@ -14,12 +14,8 @@ export class UsersService {
     private roleService: RolesService
   ) {}
 
-  async create(dto: CreateUserDto): Promise<User> {
-    const configuredData = {
-      email: dto.email,
-      encryptedPassword: dto.password
-    }
-    const user = this.userRepository.create(configuredData);
+  async create(dto: CreateUserDto) {
+    const user = this.userRepository.create({...dto, encryptedPassword: dto.password});
 
     const baseRole = await this.roleService.getRoleByValue('USER');
     user.roles = [baseRole]
@@ -27,7 +23,11 @@ export class UsersService {
     return await this.userRepository.save(user);
   }
 
-  async getAll(): Promise<User[]> {
+  async getAll() {
     return await this.userRepository.find();
+  }
+
+  async getUserByEmail(email: string) {
+    return await this.userRepository.findOneBy({email});
   }
 }
