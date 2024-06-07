@@ -1,6 +1,7 @@
 import { DataSource } from "typeorm";
 import { User } from '../users/user.entity';
 import { Role } from '../roles/role.entity';
+import * as bcrypt from 'bcryptjs';
 
 export async function prepareDB() {
   const AppDataSource = new DataSource({
@@ -17,17 +18,24 @@ export async function prepareDB() {
   await AppDataSource.initialize();
   const manager = AppDataSource.manager
 
-  let findedRole = await manager.findOneBy(Role, {value: 'USER'});
-  if (!findedRole) {
-    const newUser = manager.create(Role, {value: 'USER', description: 'Роль обычного пользователя'});
-    await manager.save(newUser);
+  const adminRole = await manager.findOneBy(Role, {value: 'ADMIN'});
+  if (!adminRole) {
+    const newRole = manager.create(Role, {value: 'ADMIN', description: 'Роль администратора'});
+    await manager.save(newRole);
   }
-  findedRole = await manager.findOneBy(Role, {value: 'ADMIN'});
-  if (!findedRole) {
-    const newUser = manager.create(Role, {value: 'ADMIN', description: 'Роль администратора'});
-    await manager.save(newUser);
+  if (!await manager.findOneBy(Role, {value: 'USER'})) {
+    const newRole = manager.create(Role, {value: 'USER', description: 'Роль обычного пользователя'});
+    await manager.save(newRole);
+  }
+  if (!await manager.findOneBy(User, {email: process.env.ROOT_USER_MAIL})) {
+    const hashPassword = await bcrypt.hash(process.env.ROOT_USER_PASSWORD, 10);
+    const rootUser = manager.create(User, {
+      email: process.env.ROOT_USER_MAIL,
+      encryptedPassword: hashPassword,
+    });
+    rootUser.roles = [adminRole];
+    await manager.save(rootUser);
   }
 
   await AppDataSource.destroy();
 }
-
