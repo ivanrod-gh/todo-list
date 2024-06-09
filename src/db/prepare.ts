@@ -2,6 +2,7 @@ import { DataSource } from "typeorm";
 import { User } from '../users/user.entity';
 import { Role } from '../roles/role.entity';
 import * as bcrypt from 'bcryptjs';
+import { Project } from "src/projects/project.entity";
 
 export async function prepareDB() {
   const AppDataSource = new DataSource({
@@ -11,15 +12,14 @@ export async function prepareDB() {
     username: process.env.POSTGRES_USER,
     password: process.env.POSTGRES_PASSWORD,
     database: process.env.POSTGRES_DB,
-    entities: [User, Role],
+    entities: [User, Role, Project],
     synchronize: process.env.NODE_ENV === 'production' ? false : true
   })
 
   await AppDataSource.initialize();
   const manager = AppDataSource.manager
 
-  const adminRole = await manager.findOneBy(Role, {value: 'ADMIN'});
-  if (!adminRole) {
+  if (!await manager.findOneBy(Role, {value: 'ADMIN'})) {
     const newRole = manager.create(Role, {value: 'ADMIN', description: 'Роль администратора'});
     await manager.save(newRole);
   }
@@ -33,6 +33,7 @@ export async function prepareDB() {
       email: process.env.ROOT_USER_MAIL,
       encryptedPassword: hashPassword,
     });
+    const adminRole = await manager.findOneBy(Role, {value: 'ADMIN'});
     rootUser.roles = [adminRole];
     await manager.save(rootUser);
   }

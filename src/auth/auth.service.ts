@@ -10,7 +10,7 @@ import { ResponseToken } from './dto/response-token.dto';
 export class AuthService {
 
   constructor(
-    private userService: UsersService,
+    private usersService: UsersService,
     private jwtService: JwtService
   ) {}
 
@@ -20,22 +20,25 @@ export class AuthService {
   }
 
   async registration(userDto: CreateUserDto): Promise<ResponseToken> {
-    const candidate = await this.userService.getUserByEmail(userDto.email);
+    const candidate = await this.usersService.getUserByEmail(userDto.email);
     if (candidate) {
       throw new HttpException('Пользователь с такой почтой уже зарегистирован', HttpStatus.BAD_REQUEST);
     }
     const hashPassword = await bcrypt.hash(userDto.password, 10);
-    const user = await this.userService.create({...userDto, password: hashPassword});
+    const user = await this.usersService.create({...userDto, password: hashPassword});
     return this.generateToken(user);
   }
 
   private async validateUser(userDto: CreateUserDto): Promise<User> {
-    const user = await this.userService.getUserByEmail(userDto.email);
-    const paswordIsCorrect = await bcrypt.compare(userDto.password, user.encryptedPassword);
-    if (user && paswordIsCorrect) {
-      return user;
+    try {
+      const user = await this.usersService.getUserByEmail(userDto.email);
+      const paswordIsCorrect = await bcrypt.compare(userDto.password, user.encryptedPassword);
+      if (user && paswordIsCorrect) {
+        return user;
+      }
+    } catch {
+      throw new UnauthorizedException({ message: 'Некорректная почта или пароль' });
     }
-    throw new UnauthorizedException({ message: 'Некорректная почта или пароль' });
   }
 
   private async generateToken(user: User): Promise<ResponseToken> {

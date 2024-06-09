@@ -11,18 +11,19 @@ export class AuthController {
 
   constructor(private authService: AuthService) {}
 
-  @ApiOperation({summary: 'Войти в приложение'})
-  @ApiResponse({status: 200, type: [ResponseToken]})
-  @Post('/login')
-  login(@Body() userDto: CreateUserDto): Promise<ResponseToken>  {
-    return this.authService.login(userDto);
-  }
-
   @ApiOperation({summary: 'Зарегистрироваться в приложении'})
   @ApiResponse({status: 200, type: [ResponseToken]})
   @UsePipes(ValidationPipe)
   @Post('/registration')
   registration(@Body() userDto: CreateUserDto): Promise<ResponseToken>  {
     return this.authService.registration(userDto);
+  }
+
+  @ApiOperation({summary: 'Войти в приложение'})
+  @ApiResponse({status: 200, type: [ResponseToken]})
+  @UsePipes(ValidationPipe)
+  @Post('/login')
+  login(@Body() userDto: CreateUserDto): Promise<ResponseToken>  {
+    return this.authService.login(userDto);
   }
 }

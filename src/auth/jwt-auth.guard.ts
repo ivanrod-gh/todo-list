@@ -1,25 +1,42 @@
-import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from "@nestjs/common";
+import { CanActivate, ExecutionContext, HttpException, HttpStatus, Injectable, UnauthorizedException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
+import { UsersService } from "src/users/users.service";
 
 @Injectable()
 export class JWTAuthGuard implements CanActivate {
 
-  constructor (private jwtService: JwtService) {}
+  constructor (
+    private jwtService: JwtService,
+    private usersService: UsersService
+  ) {}
 
-  canActivate(context: ExecutionContext): boolean {
+  async canActivate(context: ExecutionContext) {
     try {
+      console.log('JWTAUTHGUARD')
       const req = context.switchToHttp().getRequest();
       const authHeader = req.headers.authorization;
-      const bearer = authHeader.split(' ')[0];
-      const token = authHeader.split(' ')[1];
+      const authData = authHeader.split(' ');
+      const bearer = authData[0];
+      const token = authData[1];
       if (bearer !== 'Bearer' || !token) {
-        throw new UnauthorizedException({ message: 'Требуется аутентификация' })
+        throw new Error('Unauthorized')
       }
-      const user = this.jwtService.verify(token);
-      req.user = user;
+      const tokenData = this.jwtService.verify(token);
+
+      const findedUser = await this.usersService.getUserById(tokenData.id)
+      if (!findedUser) {
+        throw new Error('NoUserFound')
+      }
+      req.user = findedUser;
+      // req.user = tokenData;
+
       return true;
     } catch (err) {
-      throw new UnauthorizedException({ message: 'Требуется аутентификация' })
+      if (err.message === "NoUserFound") {
+        throw new HttpException('Пользователь не найден', HttpStatus.FORBIDDEN);
+      } else {
+        throw new UnauthorizedException({ message: 'Требуется аутентификация' })
+      }
     }
   }
 }

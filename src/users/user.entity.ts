@@ -5,9 +5,11 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   ManyToMany,
+  OneToMany,
 } from "typeorm";
 import { ApiProperty } from "@nestjs/swagger";
 import { Role } from "src/roles/role.entity";
+import { Project } from "src/projects/project.entity";
 
 @Entity("users")
 export class User {
@@ -33,7 +35,15 @@ export class User {
 
   @ApiProperty({type: [Role], description: 'Массив ролей пользователя'})
   @ManyToMany(() => Role, role => role.users, {
-    eager: true
+    eager: true,
+    onDelete: 'CASCADE',
   })
   roles: Role[]
+
+  @ApiProperty({type: [Project], description: 'Массив проектов пользователя'})
+  @OneToMany(() => Project, project => project.user, {
+    eager: true,
+    onDelete: 'CASCADE',
+  })
+  projects: Project[]
 }
