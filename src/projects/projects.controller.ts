@@ -1,12 +1,12 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Req, UseGuards, UsePipes } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, UseGuards, UsePipes } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { Project } from './project.entity';
-import { JWTAuthGuard } from 'src/auth/jwt-auth.guard';
-import { OwnerGuard } from './owner.guard';
 import { ValidationPipe } from 'src/pipes/validation.pipe';
 import { UpdateProjectDto } from './dto/update-project.dto';
+import { OwnerGuard } from 'src/guards/owner.guard';
+import { JWTAuthGuard } from 'src/guards/jwt-auth.guard';
 
 @ApiTags('Проекты')
 @Controller('api/:userId/projects')
@@ -24,7 +24,6 @@ export class ProjectsController {
     @Param('userId', ParseIntPipe) userId: number,
     @Body() dto: CreateProjectDto
   ) {
-    console.log('CONTROLLER CREATE')
     return this.projectService.create(userId, dto);
   }
 
@@ -59,7 +58,7 @@ export class ProjectsController {
     return this.projectService.delete(projectId);
   }
 
-  @ApiOperation({summary: 'Удалить определенный проект пользователя'})
+  @ApiOperation({summary: 'Изменить проект пользователя'})
   @ApiResponse({status: 200, type: Project})
   @UsePipes(ValidationPipe)
   @UseGuards(OwnerGuard)

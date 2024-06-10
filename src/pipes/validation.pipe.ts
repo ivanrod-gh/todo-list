@@ -10,15 +10,12 @@ export class ValidationPipe implements PipeTransform {
   constructor(@Inject(REQUEST) private req: Request & { user: User }) {}
 
   async transform(value: any, metadata: ArgumentMetadata) {
-    console.log('CALL ValidationPipe')
-    
     if (metadata.type !== 'body') {
       return value;
     }
 
     const obj = plainToClass(metadata.metatype, value);
     const errors = await validate(obj);
-
 
     let messages = {}
     if (errors.length) {
@@ -29,11 +26,24 @@ export class ValidationPipe implements PipeTransform {
     }
 
     if (metadata.metatype.name === 'CreateProjectDto' || metadata.metatype.name === 'UpdateProjectDto') {
-      for (let elem of this.req.user.projects) {
-        if (elem.name === obj.name) {
+      for (let project of this.req.user.projects) {
+        if (project.name === obj.name) {
           messages['name']??= [];
           messages['name'].push('Проект с таким именем уже существует');
           break;
+        }
+      }
+    }
+    
+    if (metadata.metatype.name === 'CreateStatusDto' || metadata.metatype.name === 'UpdateStatusDto') {
+      label:
+      for (let project of this.req.user.projects) {
+        for (let status of project.statuses) {
+          if (status.name === obj.name) {
+            messages['name']??= [];
+            messages['name'].push('Статус с таким именем уже существует');
+            break label;
+          }
         }
       }
     }

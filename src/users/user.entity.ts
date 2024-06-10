@@ -10,6 +10,7 @@ import {
 import { ApiProperty } from "@nestjs/swagger";
 import { Role } from "src/roles/role.entity";
 import { Project } from "src/projects/project.entity";
+import { Exclude, classToPlain } from "class-transformer";
 
 @Entity("users")
 export class User {
@@ -22,6 +23,7 @@ export class User {
   email: string;
 
   @ApiProperty({example: '!@#$%^&', description: 'Зашифрованный пароль пользователя'})
+  @Exclude({ toPlainOnly: true })
   @Column("varchar", { length: 100 })
   encryptedPassword: string;
 
@@ -46,4 +48,8 @@ export class User {
     onDelete: 'CASCADE',
   })
   projects: Project[]
+
+  toJSON() {
+    return classToPlain(this);
+  }
 }

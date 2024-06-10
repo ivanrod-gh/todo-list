@@ -3,10 +3,10 @@ import { UsersService } from './users.service';
 import { CreateUserDto } from "./dto/create-user.dto";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { User } from './user.entity';
-import { JWTAuthGuard } from 'src/auth/jwt-auth.guard';
-import { Roles } from 'src/auth/roles-auth.decorator';
-import { RolesGuard } from 'src/auth/roles.guard';
 import { ValidationPipe } from 'src/pipes/validation.pipe';
+import { Roles } from 'src/decorators/roles-auth.decorator';
+import { RolesGuard } from 'src/guards/roles.guard';
+import { JWTAuthGuard } from 'src/guards/jwt-auth.guard';
 
 @ApiTags('Пользователи')
 @Roles('ADMIN')

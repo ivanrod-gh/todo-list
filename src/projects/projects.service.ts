@@ -35,21 +35,21 @@ export class ProjectsService {
     }
   }
 
-  async delete(id: number) {
-    const project = await this.projectRepository.delete({ id });
-    if (!project.affected) {
-      throw new HttpException('Указанный проект не был удален', HttpStatus.BAD_REQUEST)
-    } else {
-      return { message: `Проект с id [${id}] успешно удален` }
-    }
-  }
-
   async update(id: number, dto: UpdateProjectDto) {
     const project = await this.projectRepository.update(id, dto)
     if (!project.affected) {
       throw new HttpException('Указанный проект не был обновлен', HttpStatus.BAD_REQUEST)
     } else {
       return { message: `Проект с id [${id}] успешно обновлен` }
+    }
+  }
+
+  async delete(id: number) {
+    const project = await this.projectRepository.delete({ id });
+    if (!project.affected) {
+      throw new HttpException('Указанный проект не был удален', HttpStatus.BAD_REQUEST)
+    } else {
+      return { message: `Проект с id [${id}] успешно удален` }
     }
   }
 }

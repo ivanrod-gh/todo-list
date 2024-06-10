@@ -7,9 +7,11 @@ import {
   Index,
   ManyToOne,
   JoinColumn,
+  OneToMany,
 } from "typeorm";
 import { ApiProperty } from "@nestjs/swagger";
 import { User } from "src/users/user.entity";
+import { Status } from "src/statuses/status.entity";
 
 @Entity("projects")
 @Index(['userId', 'name'], { unique: true })
@@ -34,12 +36,19 @@ export class Project {
 	@UpdateDateColumn()
 	updatedAt: Date;
 
-  @ApiProperty({type: () => User, description: 'Принадлежит пользователю)'})
+  @ApiProperty({type: () => User, description: 'Принадлежит указанному пользователю'})
   @ManyToOne(() => User, user => user.projects)
 	@JoinColumn({ name: 'userId' })
   user: User
 
-  @ApiProperty({example: '1', description: 'Id владельца'})
+  @ApiProperty({example: '1', description: 'Id пользователя, которому принадлежит проект'})
   @Column()
   userId: number;
+
+  @ApiProperty({type: [Status], description: 'Массив сатусов проекта'})
+  @OneToMany(() => Status, status => status.project, {
+    eager: true,
+    onDelete: 'CASCADE',
+  })
+  statuses: Status[]
 }

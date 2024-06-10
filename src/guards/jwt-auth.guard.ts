@@ -12,7 +12,6 @@ export class JWTAuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext) {
     try {
-      console.log('JWTAUTHGUARD')
       const req = context.switchToHttp().getRequest();
       const authHeader = req.headers.authorization;
       const authData = authHeader.split(' ');

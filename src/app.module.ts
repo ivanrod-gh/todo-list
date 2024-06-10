@@ -8,6 +8,8 @@ import { Role } from './roles/role.entity';
 import { AuthModule } from './auth/auth.module';
 import { ProjectsModule } from './projects/projects.module';
 import { Project } from "./projects/project.entity";
+import { StatusesModule } from './statuses/statuses.module';
+import { Status } from "./statuses/status.entity";
 
 @Module({
   controllers: [],
@@ -23,13 +25,14 @@ import { Project } from "./projects/project.entity";
       username: process.env.POSTGRES_USER,
       password: process.env.POSTGRES_PASSWORD,
       database: process.env.POSTGRES_DB,
-      entities: [User, Role, Project],
+      entities: [User, Role, Project, Status],
       synchronize: process.env.NODE_ENV === 'production' ? false : true
     }),
     UsersModule,
     RolesModule,
     AuthModule,
     ProjectsModule,
+    StatusesModule,
   ]
 })
 export class AppModule {}
