@@ -15,7 +15,7 @@ export class ProjectsController {
   constructor(private readonly projectService: ProjectsService) {}
 
   @ApiOperation({summary: 'Создать проект пользователя'})
-  @ApiResponse({status: 200, type: Project})
+  @ApiResponse({status: 201, type: Project})
   @UsePipes(ValidationPipe)
   @UseGuards(OwnerGuard)
   @UseGuards(JWTAuthGuard)

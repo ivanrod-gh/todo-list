@@ -16,7 +16,7 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @ApiOperation({summary: 'Создание пользователя'})
-  @ApiResponse({status: 200, type: User})
+  @ApiResponse({status: 201, type: User})
   @UsePipes(ValidationPipe)
   @UseGuards(RolesGuard)
   @UseGuards(JWTAuthGuard)
@@ -34,4 +34,9 @@ export class UsersController {
   getAll() {
     return this.usersService.getAll();
   }
+
+  // @Get('/getenum')
+  // getEnum() {
+  //   return this.usersService.getEnum();
+  // }
 }

@@ -49,6 +49,10 @@ export class Project {
   @OneToMany(() => Status, status => status.project, {
     eager: true,
     onDelete: 'CASCADE',
+    cascade: true,
   })
   statuses: Status[]
+
+  @Column("simple-array", { default: '' })
+  order: string[];
 }

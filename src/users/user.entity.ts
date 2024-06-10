@@ -52,4 +52,7 @@ export class User {
   toJSON() {
     return classToPlain(this);
   }
+
+  // @Column("simple-array", { nullable: true })
+  // orders: string[];
 }

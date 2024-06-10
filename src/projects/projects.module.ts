@@ -10,6 +10,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
   providers: [ProjectsService],
   imports: [
     TypeOrmModule.forFeature([Project]),
-  ]
+  ],
+  exports: [ProjectsService]
 })
 export class ProjectsModule {}

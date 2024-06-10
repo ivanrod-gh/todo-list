@@ -35,7 +35,9 @@ export class Status {
 	updatedAt: Date;
 
   @ApiProperty({type: () => Project, description: 'Принадлежит указанному проекту'})
-  @ManyToOne(() => Project, project => project.statuses)
+  @ManyToOne(() => Project, project => project.statuses, {
+    orphanedRowAction: 'delete',
+  })
 	@JoinColumn({ name: 'projectId' })
   project: Project
 

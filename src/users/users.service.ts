@@ -34,4 +34,16 @@ export class UsersService {
   async getUserById(id: number) {
     return await this.userRepository.findOneBy({id});
   }
+
+  // async getEnum() {
+  //   const user = await this.userRepository.findOneBy({id: 1});
+  //   const orders = user.orders;
+  //   return typeof orders[0];
+
+  //   // user.orders.push(4)
+  //   // user.orders = ['1','2','3']
+  //   // return await this.userRepository.save(user);
+  // }
 }
+
+
