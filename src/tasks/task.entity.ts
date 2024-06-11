@@ -7,24 +7,23 @@ import {
   Index,
   ManyToOne,
   JoinColumn,
-  OneToMany,
 } from "typeorm";
 import { ApiProperty } from "@nestjs/swagger";
 import { Project } from "src/projects/project.entity";
-import { Task } from "src/tasks/task.entity";
+import { Status } from "src/statuses/status.entity";
 
-@Entity("statuses")
+@Entity("tasks")
 @Index(['projectId', 'name'], { unique: true })
-export class Status {
+export class Task {
   @ApiProperty({example: 1, description: 'Уникальный идентификатор'})
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ApiProperty({example: 'Сделать', description: 'Уникальное (в рамках одного пользователя) название статуса'})
+  @ApiProperty({example: 'Пробежка', description: 'Уникальное (в рамках одного проекта) название задачи'})
   @Column("varchar", { length: 100 })
   name: string;
 
-  @ApiProperty({example: 'Задачи, которые необходимо начать выполнять', description: 'Описание статуса'})
+  @ApiProperty({example: 'Надо пробежать 1 километр', description: 'Описание задачи'})
   @Column("varchar", { length: 100, nullable: true })
   description?: string;
 
@@ -36,26 +35,27 @@ export class Status {
 	@UpdateDateColumn()
 	updatedAt: Date;
 
+  @ApiProperty({type: () => Status, description: 'Принадлежит указанному статусу'})
+  @ManyToOne(() => Status, status => status.tasks, {
+    orphanedRowAction: 'delete',
+    onDelete: 'CASCADE',
+  })
+	@JoinColumn({ name: 'statusId' })
+  status: Status
+
+  @ApiProperty({example: '1', description: 'Id статуса, которому принадлежит задача'})
+  @Column()
+  statusId: number;
+
   @ApiProperty({type: () => Project, description: 'Принадлежит указанному проекту'})
-  @ManyToOne(() => Project, project => project.statuses, {
+  @ManyToOne(() => Project, project => project.tasks, {
     orphanedRowAction: 'delete',
     onDelete: 'CASCADE',
   })
 	@JoinColumn({ name: 'projectId' })
   project: Project
 
-  @ApiProperty({example: '1', description: 'Id проекта, которому принадлежит статус'})
+  @ApiProperty({example: '1', description: 'Id проекта, которому принадлежит задача'})
   @Column()
   projectId: number;
-
-  @ApiProperty({type: [Task], description: 'Массив задач статуса'})
-  @OneToMany(() => Task, task => task.status, {
-    eager: true,
-    cascade: true,
-  })
-  tasks: Task[]
-
-  @ApiProperty({example: "['Отпуск', 'Гараж']", description: 'Очередность статусов проекта (согласно именам)'})
-  @Column("simple-array", { default: '' })
-  order: string[];
 }

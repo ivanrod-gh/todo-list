@@ -45,14 +45,11 @@ export class User {
   @ApiProperty({type: [Project], description: 'Массив проектов пользователя'})
   @OneToMany(() => Project, project => project.user, {
     eager: true,
-    onDelete: 'CASCADE',
+    cascade: true,
   })
   projects: Project[]
 
   toJSON() {
     return classToPlain(this);
   }
-
-  // @Column("simple-array", { nullable: true })
-  // orders: string[];
 }

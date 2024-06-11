@@ -12,6 +12,8 @@ import {
 import { ApiProperty } from "@nestjs/swagger";
 import { User } from "src/users/user.entity";
 import { Status } from "src/statuses/status.entity";
+import { Task } from "src/tasks/task.entity";
+import { Exclude, classToPlain } from "class-transformer";
 
 @Entity("projects")
 @Index(['userId', 'name'], { unique: true })
@@ -37,7 +39,10 @@ export class Project {
 	updatedAt: Date;
 
   @ApiProperty({type: () => User, description: 'Принадлежит указанному пользователю'})
-  @ManyToOne(() => User, user => user.projects)
+  @ManyToOne(() => User, user => user.projects, {
+    orphanedRowAction: 'delete',
+    onDelete: 'CASCADE',
+  })
 	@JoinColumn({ name: 'userId' })
   user: User
 
@@ -48,11 +53,17 @@ export class Project {
   @ApiProperty({type: [Status], description: 'Массив сатусов проекта'})
   @OneToMany(() => Status, status => status.project, {
     eager: true,
-    onDelete: 'CASCADE',
     cascade: true,
   })
   statuses: Status[]
 
+  @ApiProperty({type: [Task], description: 'Массив задач проекта'})
+  @OneToMany(() => Task, task => task.project, {
+    cascade: true,
+  })
+  tasks: Task[]
+
+  @ApiProperty({example: "['Сделать', 'В процессе']", description: 'Очередность статусов проекта (согласно именам)'})
   @Column("simple-array", { default: '' })
   order: string[];
 }

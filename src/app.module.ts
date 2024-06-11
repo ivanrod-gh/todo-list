@@ -10,6 +10,8 @@ import { ProjectsModule } from './projects/projects.module';
 import { Project } from "./projects/project.entity";
 import { StatusesModule } from './statuses/statuses.module';
 import { Status } from "./statuses/status.entity";
+import { TasksModule } from './tasks/tasks.module';
+import { Task } from "./tasks/task.entity";
 
 @Module({
   controllers: [],
@@ -25,7 +27,7 @@ import { Status } from "./statuses/status.entity";
       username: process.env.POSTGRES_USER,
       password: process.env.POSTGRES_PASSWORD,
       database: process.env.POSTGRES_DB,
-      entities: [User, Role, Project, Status],
+      entities: [User, Role, Project, Status, Task],
       synchronize: process.env.NODE_ENV === 'production' ? false : true
     }),
     UsersModule,
@@ -33,6 +35,7 @@ import { Status } from "./statuses/status.entity";
     AuthModule,
     ProjectsModule,
     StatusesModule,
+    TasksModule,
   ]
 })
 export class AppModule {}

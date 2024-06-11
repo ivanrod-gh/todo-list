@@ -7,7 +7,10 @@ import { User } from "src/users/user.entity";
 
 @Injectable({scope: Scope.REQUEST})
 export class ValidationPipe implements PipeTransform {
-  constructor(@Inject(REQUEST) private req: Request & { user: User }) {}
+  constructor(@Inject(REQUEST) private req: Request & { 
+    user: User,
+    params: any
+  }) {}
 
   async transform(value: any, metadata: ArgumentMetadata) {
     if (metadata.type !== 'body') {
@@ -36,13 +39,46 @@ export class ValidationPipe implements PipeTransform {
     }
     
     if (metadata.metatype.name === 'CreateStatusDto' || metadata.metatype.name === 'UpdateStatusDto') {
+      const reqParamsProjectId = +this.req.params.projectId
       label:
       for (let project of this.req.user.projects) {
+        if (project.id === reqParamsProjectId) {
+          for (let status of project.statuses) {
+            if (status.name === obj.name) {
+              messages['name']??= [];
+              messages['name'].push('Статус с таким именем уже существует');
+              break label;
+            }
+          }
+        }
+      }
+    }
+
+    if (metadata.metatype.name === 'CreateTaskDto' || metadata.metatype.name === 'UpdateTaskDto') {
+      const reqParamsStatusId = +this.req.params.statusId;
+      let projectId : number;
+
+      label1:
+      for (let project of this.req.user.projects) {
         for (let status of project.statuses) {
-          if (status.name === obj.name) {
-            messages['name']??= [];
-            messages['name'].push('Статус с таким именем уже существует');
-            break label;
+          if (status.id === reqParamsStatusId) {
+            projectId = status.projectId
+            break label1;
+          }
+        }
+      }
+
+      label2:
+      for (let project of this.req.user.projects) {
+        if (project.id === projectId) {
+          for (let status of project.statuses) {
+            for (let task of status.tasks) {
+              if (task.name === obj.name) {
+                messages['name']??= [];
+                messages['name'].push('Задача с таким именем уже существует');
+                break label2;
+              }
+            }
           }
         }
       }

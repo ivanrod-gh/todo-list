@@ -4,30 +4,23 @@ import { Status } from './status.entity';
 import { Repository } from 'typeorm';
 import { CreateStatusDto } from './dto/create-status.dto';
 import { UpdateStatusDto } from './dto/update-status.dto';
-import { User } from 'src/users/user.entity';
 import { Project } from 'src/projects/project.entity';
 import { ProjectsService } from 'src/projects/projects.service';
 import { ProjectStatusOrderDto } from './dto/project-status-order.dto';
+import { Task } from 'src/tasks/task.entity';
 
 @Injectable()
 export class StatusesService {
   constructor(
     @InjectRepository(Status)
     private readonly statusRepository: Repository<Status>,
-    private projectService: ProjectsService
+    private readonly projectService: ProjectsService
   ) {}
 
-  async create(req: Request & {user: User}, projectId: number, dto: CreateStatusDto) {
+  async create(req: Request & {project: Project}, dto: CreateStatusDto) {
     const status = this.statusRepository.create(dto);
-    let project: Project;
-    for (let projectElem of req.user.projects) {
-      if (projectElem.id === projectId) {
-        project = projectElem;
-        break
-      }
-    }
-    project.statuses = [...project.statuses, status]
-    return await this.projectService.saveWithOrdering(project)
+    req.project.statuses = [...req.project.statuses, status]
+    return await this.projectService.saveWithOrdering(req.project)
   }
 
   async getAll(projectId: number) {
@@ -56,37 +49,65 @@ export class StatusesService {
     }
   }
 
-  async delete(req: Request & {user: User}, projectId: number, statusId: number) {
-    const project = this.findProjectInUser(req, projectId)
-    project.statuses = project.statuses.filter((projectStatus) => projectStatus.id !== statusId)
-    return await this.projectService.saveWithOrdering(project)
+  async delete(req: Request & { project: Project }, statusId: number) {
+    req.project.statuses = req.project.statuses.filter((status) => status.id !== statusId)
+    return await this.projectService.saveWithOrdering(req.project)
   }
 
-  private findProjectInUser(req: Request & {user: User}, projectId: number) {
-    let project: Project;
-    for (let projectElem of req.user.projects) {
-      if (projectElem.id === projectId) {
-        project = projectElem;
-        break
-      }
+  async OrderAt(req: Request & { project: Project, status: Status }, dto: ProjectStatusOrderDto) {
+    return await this.projectService.insertIntoOrderAt(req.project, req.status.name, dto.orderAt);
+  }
+
+  async saveWithOrdering(status : Status) {
+    status.order = this.manageOrder(status)
+    return await this.statusRepository.save(status);
+  }
+
+  manageOrder(status : Status) {
+    let statusOrder = status.order;
+    const tasksNames = status.tasks.map((task) => task.name);
+    if (statusOrder.length < tasksNames.length) {
+      const arrayDiff = tasksNames.filter(taskName => !statusOrder.includes(taskName))
+      statusOrder = statusOrder.concat(arrayDiff)
+    } else {
+      statusOrder = statusOrder.filter(taskName => tasksNames.includes(taskName))
     }
+    return statusOrder;
+  }
+
+  async insertIntoOrderAt(status : Status, taskName: string, insertAt: number) {
+    status.order = this.manageInsertingInOrder(status, taskName, insertAt, true);
+    return await this.statusRepository.save(status);
+  }
+
+  manageInsertingInOrder(status : Status, taskName: string, insertAt: number, preliminaryDestroy: true | false) {
+    let statusOrder = status.order;
+    if (
+      insertAt < 0 ||
+      (preliminaryDestroy && insertAt > statusOrder.length - 1) ||
+      (!preliminaryDestroy && insertAt > statusOrder.length)
+    ) {
+      throw new HttpException('Указан неверный индекс очередности', HttpStatus.BAD_REQUEST)
+    }
+    if (preliminaryDestroy) {
+      const statusIndex = statusOrder.indexOf(taskName);
+      statusOrder.splice(statusIndex, 1);
+    }
+    statusOrder.splice(insertAt, 0, taskName);
+    return statusOrder;
+  }
+
+  async moveInsertIntoOrderAt(project: Project, status: Status, secondStatus: Status, task: Task, insertAt: number) {
+    secondStatus.order = this.manageInsertingInOrder(secondStatus, task.name, insertAt, false);
+    secondStatus.tasks = [...secondStatus.tasks, task]
+
+    status.tasks = status.tasks.filter(statusTask => statusTask.id !== task.id)
+    status.order = this.manageOrder(status)
+
+    await this.statusRepository.save(secondStatus);
+    await this.statusRepository.save(status);
     return project;
   }
-
-  async OrderAt(req: Request & {user: User}, projectId: number, statusId: number, dto: ProjectStatusOrderDto) {
-    const project = this.findProjectInUser(req, projectId);
-    const statusName = this.findStatusInProject(project, statusId).name;
-    return await this.projectService.insertIntoOrderAt(project, statusName, dto);
-  }
-
-  private findStatusInProject(project: Project, statusId: number) {
-    let status: Status;
-    for (let statusElem of project.statuses) {
-      if (statusElem.id === statusId) {
-        status = statusElem;
-        break
-      }
-    }
-    return status;
-  }
 }
+
+

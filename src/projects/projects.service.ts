@@ -4,7 +4,6 @@ import { Project } from './project.entity';
 import { Repository } from 'typeorm';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
-import { ProjectStatusOrderDto } from 'src/statuses/dto/project-status-order.dto';
 
 @Injectable()
 export class ProjectsService {
@@ -17,7 +16,6 @@ export class ProjectsService {
     const project = this.projectRepository.create(dto);
     project.userId = userId;
     return await this.projectRepository.save(project);
-    // return await this.save(project);
   }
 
   async getAll(userId: number) {
@@ -55,10 +53,6 @@ export class ProjectsService {
     }
   }
 
-  async addToOrder(id: number) {
-
-  }
-
   async saveWithOrdering(project : Project) {
     project.order = await this.manageOrder(project)
     return await this.projectRepository.save(project);
@@ -76,27 +70,19 @@ export class ProjectsService {
     return projectOrder;
   }
 
-  async insertIntoOrderAt(project : Project, statusName: string, dto: ProjectStatusOrderDto) {
-    let projectOrder = project.order;
-    const wantedStatusIndex = dto.orderAt
-    if (wantedStatusIndex < 0 || wantedStatusIndex > projectOrder.length - 1) {
-      throw new HttpException('Указан неверный индекс очередности', HttpStatus.BAD_REQUEST)
-    }
-
-    // console.log(projectOrder)
-    // console.log(statusName)
-    // console.log(dto)
-    const statusIndex = projectOrder.indexOf(statusName)
-    // console.log(statusIndex)
-    projectOrder.splice(statusIndex, 1)
-    projectOrder.splice(wantedStatusIndex, 0, statusName)
-    // console.log(projectOrder)
-
-    project.order = projectOrder
-
-
+  async insertIntoOrderAt(project : Project, statusName: string, insertAt: number) {
+    project.order = this.manageInsertingInOrder(project, statusName, insertAt);
     return await this.projectRepository.save(project);
+  }
 
-    // return 'ok'
+  manageInsertingInOrder(project : Project, statusName: string, insertAt: number) {
+    let projectOrder = project.order;
+    if (insertAt < 0 || insertAt > projectOrder.length - 1) {
+      throw new HttpException('Указан неверный индекс очередности', HttpStatus.BAD_REQUEST);
+    }
+    const statusIndex = projectOrder.indexOf(statusName);
+    projectOrder.splice(statusIndex, 1);
+    projectOrder.splice(insertAt, 0, statusName);
+    return projectOrder;
   }
 }

@@ -4,6 +4,7 @@ import { Role } from '../roles/role.entity';
 import * as bcrypt from 'bcryptjs';
 import { Project } from "src/projects/project.entity";
 import { Status } from "src/statuses/status.entity";
+import { Task } from "src/tasks/task.entity";
 
 export async function prepareDB() {
   const AppDataSource = new DataSource({
@@ -13,7 +14,7 @@ export async function prepareDB() {
     username: process.env.POSTGRES_USER,
     password: process.env.POSTGRES_PASSWORD,
     database: process.env.POSTGRES_DB,
-    entities: [User, Role, Project, Status],
+    entities: [User, Role, Project, Status, Task],
     synchronize: process.env.NODE_ENV === 'production' ? false : true
   })
 

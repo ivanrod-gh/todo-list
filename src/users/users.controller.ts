@@ -34,9 +34,4 @@ export class UsersController {
   getAll() {
     return this.usersService.getAll();
   }
-
-  // @Get('/getenum')
-  // getEnum() {
-  //   return this.usersService.getEnum();
-  // }
 }
