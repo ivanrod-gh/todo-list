@@ -60,29 +60,29 @@ export class ProjectsService {
 
   async manageOrder(project : Project) {
     let projectOrder = project.order;
-    const statusesNames = project.statuses.map((status) => status.name);
-    if (projectOrder.length < statusesNames.length) {
-      const arrayDiff = statusesNames.filter(statusName => !projectOrder.includes(statusName))
+    const statusesIds = project.statuses.map((status) => status.id.toString());
+    if (projectOrder.length < statusesIds.length) {
+      const arrayDiff = statusesIds.filter(statusId => !projectOrder.includes(statusId))
       projectOrder = projectOrder.concat(arrayDiff)
     } else {
-      projectOrder = projectOrder.filter(statusName => statusesNames.includes(statusName))
+      projectOrder = projectOrder.filter(statusId => statusesIds.includes(statusId))
     }
     return projectOrder;
   }
 
-  async insertIntoOrderAt(project : Project, statusName: string, insertAt: number) {
-    project.order = this.manageInsertingInOrder(project, statusName, insertAt);
+  async insertIntoOrderAt(project : Project, statusId: string, insertAt: number) {
+    project.order = this.manageInsertingInOrder(project, statusId, insertAt);
     return await this.projectRepository.save(project);
   }
 
-  manageInsertingInOrder(project : Project, statusName: string, insertAt: number) {
+  manageInsertingInOrder(project : Project, statusId: string, insertAt: number) {
     let projectOrder = project.order;
     if (insertAt < 0 || insertAt > projectOrder.length - 1) {
       throw new HttpException('Указан неверный индекс очередности', HttpStatus.BAD_REQUEST);
     }
-    const statusIndex = projectOrder.indexOf(statusName);
+    const statusIndex = projectOrder.indexOf(statusId);
     projectOrder.splice(statusIndex, 1);
-    projectOrder.splice(insertAt, 0, statusName);
+    projectOrder.splice(insertAt, 0, statusId);
     return projectOrder;
   }
 }

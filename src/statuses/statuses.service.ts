@@ -18,8 +18,12 @@ export class StatusesService {
   ) {}
 
   async create(req: Request & {project: Project}, dto: CreateStatusDto) {
-    const status = this.statusRepository.create(dto);
-    req.project.statuses = [...req.project.statuses, status]
+    const status = Object.assign(this.statusRepository.create(dto), {
+      projectId: req.project.id,
+      tasks: [],
+    });
+    const savedStatus = await this.statusRepository.save(status);
+    req.project.statuses = [...req.project.statuses, savedStatus];
     return await this.projectService.saveWithOrdering(req.project)
   }
 
@@ -55,7 +59,7 @@ export class StatusesService {
   }
 
   async OrderAt(req: Request & { project: Project, status: Status }, dto: ProjectStatusOrderDto) {
-    return await this.projectService.insertIntoOrderAt(req.project, req.status.name, dto.orderAt);
+    return await this.projectService.insertIntoOrderAt(req.project, req.status.id.toString(), dto.orderAt);
   }
 
   async saveWithOrdering(status : Status) {
@@ -65,40 +69,40 @@ export class StatusesService {
 
   manageOrder(status : Status) {
     let statusOrder = status.order;
-    const tasksNames = status.tasks.map((task) => task.name);
-    if (statusOrder.length < tasksNames.length) {
-      const arrayDiff = tasksNames.filter(taskName => !statusOrder.includes(taskName))
+    const tasksIds = status.tasks.map((task) => task.id.toString());
+    if (statusOrder.length < tasksIds.length) {
+      const arrayDiff = tasksIds.filter(taskId => !statusOrder.includes(taskId))
       statusOrder = statusOrder.concat(arrayDiff)
     } else {
-      statusOrder = statusOrder.filter(taskName => tasksNames.includes(taskName))
+      statusOrder = statusOrder.filter(taskId => tasksIds.includes(taskId))
     }
     return statusOrder;
   }
 
-  async insertIntoOrderAt(status : Status, taskName: string, insertAt: number) {
-    status.order = this.manageInsertingInOrder(status, taskName, insertAt, true);
+  async insertIntoOrderAt(status : Status, taskId: string, insertAt: number) {
+    status.order = this.manageInsertingInOrder(status, taskId, insertAt, true);
     return await this.statusRepository.save(status);
   }
 
-  manageInsertingInOrder(status : Status, taskName: string, insertAt: number, preliminaryDestroy: true | false) {
+  manageInsertingInOrder(status : Status, taskId: string, insertAt: number, withDeletionInOrder: true | false) {
     let statusOrder = status.order;
     if (
       insertAt < 0 ||
-      (preliminaryDestroy && insertAt > statusOrder.length - 1) ||
-      (!preliminaryDestroy && insertAt > statusOrder.length)
+      (withDeletionInOrder && insertAt > statusOrder.length - 1) ||
+      (!withDeletionInOrder && insertAt > statusOrder.length)
     ) {
       throw new HttpException('Указан неверный индекс очередности', HttpStatus.BAD_REQUEST)
     }
-    if (preliminaryDestroy) {
-      const statusIndex = statusOrder.indexOf(taskName);
+    if (withDeletionInOrder) {
+      const statusIndex = statusOrder.indexOf(taskId);
       statusOrder.splice(statusIndex, 1);
     }
-    statusOrder.splice(insertAt, 0, taskName);
+    statusOrder.splice(insertAt, 0, taskId);
     return statusOrder;
   }
 
   async moveInsertIntoOrderAt(project: Project, status: Status, secondStatus: Status, task: Task, insertAt: number) {
-    secondStatus.order = this.manageInsertingInOrder(secondStatus, task.name, insertAt, false);
+    secondStatus.order = this.manageInsertingInOrder(secondStatus, task.id.toString(), insertAt, false);
     secondStatus.tasks = [...secondStatus.tasks, task]
 
     status.tasks = status.tasks.filter(statusTask => statusTask.id !== task.id)

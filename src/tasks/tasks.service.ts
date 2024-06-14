@@ -18,9 +18,12 @@ export class TasksService {
   ) {}
 
   async create(req: Request & { status: Status }, dto: CreateTaskDto) {
-    const task = this.tasksRepository.create(dto);
-    task.projectId = req.status.projectId;
-    req.status.tasks = [...req.status.tasks, task];
+    const task = Object.assign(this.tasksRepository.create(dto), {
+      statusId: req.status.id,
+      projectId: req.status.projectId,
+    })
+    const savedTask = await this.tasksRepository.save(task);
+    req.status.tasks = [...req.status.tasks, savedTask];
     return await this.statusService.saveWithOrdering(req.status);
   }
 
@@ -56,7 +59,7 @@ export class TasksService {
   }
 
   async OrderAt(req: Request & { status: Status, task: Task }, dto: StatusTaskOrderDto) {
-    return await this.statusService.insertIntoOrderAt(req.status, req.task.name, dto.orderAt);
+    return await this.statusService.insertIntoOrderAt(req.status, req.task.id.toString(), dto.orderAt);
   }
 
   async MoveOrderAt(req: Request & {
