@@ -61,7 +61,7 @@ export class Project {
   })
   tasks: Task[]
 
-  @ApiProperty({example: "['Сделать', 'В процессе']", description: 'Очередность статусов проекта (согласно именам)'})
+  @ApiProperty({example: "['1']", description: 'Очередность статусов проекта (согласно id)'})
   @Column("simple-array", { default: '' })
   order: string[];
 }

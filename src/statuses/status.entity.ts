@@ -20,7 +20,7 @@ export class Status {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ApiProperty({example: 'Сделать', description: 'Уникальное (в рамках одного пользователя) название статуса'})
+  @ApiProperty({example: 'Сделать', description: 'Уникальное (в рамках одного проекта) название статуса'})
   @Column("varchar", { length: 100 })
   name: string;
 
@@ -54,7 +54,7 @@ export class Status {
   })
   tasks: Task[]
 
-  @ApiProperty({example: "['Отпуск', 'Гараж']", description: 'Очередность статусов проекта (согласно именам)'})
+  @ApiProperty({example: "['1']", description: 'Очередность статусов проекта (согласно id)'})
   @Column("simple-array", { default: '' })
   order: string[];
 }
