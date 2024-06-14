@@ -9,7 +9,7 @@ import {
   JoinColumn,
   OneToMany,
 } from "typeorm";
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiExcludeEndpoint, ApiProperty } from "@nestjs/swagger";
 import { User } from "src/users/user.entity";
 import { Status } from "src/statuses/status.entity";
 import { Task } from "src/tasks/task.entity";
@@ -38,7 +38,6 @@ export class Project {
 	@UpdateDateColumn()
 	updatedAt: Date;
 
-  @ApiProperty({type: () => User, description: 'Принадлежит указанному пользователю'})
   @ManyToOne(() => User, user => user.projects, {
     orphanedRowAction: 'delete',
     onDelete: 'CASCADE',
@@ -57,7 +56,6 @@ export class Project {
   })
   statuses: Status[]
 
-  @ApiProperty({type: [Task], description: 'Массив задач проекта'})
   @OneToMany(() => Task, task => task.project, {
     cascade: true,
   })

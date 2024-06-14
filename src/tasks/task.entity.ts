@@ -35,7 +35,6 @@ export class Task {
 	@UpdateDateColumn()
 	updatedAt: Date;
 
-  @ApiProperty({type: () => Status, description: 'Принадлежит указанному статусу'})
   @ManyToOne(() => Status, status => status.tasks, {
     orphanedRowAction: 'delete',
     onDelete: 'CASCADE',
@@ -47,7 +46,6 @@ export class Task {
   @Column()
   statusId: number;
 
-  @ApiProperty({type: () => Project, description: 'Принадлежит указанному проекту'})
   @ManyToOne(() => Project, project => project.tasks, {
     orphanedRowAction: 'delete',
     onDelete: 'CASCADE',
