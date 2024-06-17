@@ -1,4 +1,5 @@
 import { CanActivate, ExecutionContext, HttpException, HttpStatus, Injectable } from "@nestjs/common";
+import { Field } from "src/fields/field.entity";
 import { Project } from "src/projects/project.entity";
 import { Status } from "src/statuses/status.entity";
 import { Task } from "src/tasks/task.entity";
@@ -35,13 +36,19 @@ export class OwnerGuard implements CanActivate {
       if (reqParamsStatusId) {
         let status: Status;
         let project: Project;
-        label:
-        for (let userProject of req.user.projects) {
-          project = req.user.projects[req.user.projects.indexOf(userProject)];
-          for (let userStatus of userProject.statuses) {
-            if (userStatus.id === reqParamsStatusId) {
-              status = project.statuses[project.statuses.indexOf(userStatus)];
-              break label;
+        if (req.project) {
+          getStatusFromProjectStatuses(req.project);
+        } else {
+          for (let userProject of req.user.projects) {
+            project = req.user.projects[req.user.projects.indexOf(userProject)];
+            getStatusFromProjectStatuses(project);
+          }
+        }
+        function getStatusFromProjectStatuses(userProject: Project): void {
+          for (let projectStatus of userProject.statuses) {
+            if (projectStatus.id === reqParamsStatusId) {
+              status = userProject.statuses[userProject.statuses.indexOf(projectStatus)];
+              break;
             }
           }
         }
@@ -57,13 +64,19 @@ export class OwnerGuard implements CanActivate {
       if (reqParamsSecondStatusId) {
         let secondStatus: Status;
         let project: Project;
-        label:
-        for (let userProject of req.user.projects) {
-          project = req.user.projects[req.user.projects.indexOf(userProject)];
-          for (let userStatus of userProject.statuses) {
-            if (userStatus.id === reqParamsSecondStatusId) {
-              secondStatus = project.statuses[project.statuses.indexOf(userStatus)];
-              break label;
+        if (req.project) {
+          getSecondStatusFromProjectStatuses(req.project);
+        } else {
+          for (let userProject of req.user.projects) {
+            project = req.user.projects[req.user.projects.indexOf(userProject)];
+            getSecondStatusFromProjectStatuses(project);
+          }
+        }
+        function getSecondStatusFromProjectStatuses(userProject: Project): void {
+          for (let projectSecondStatus of userProject.statuses) {
+            if (projectSecondStatus.id === reqParamsSecondStatusId) {
+              secondStatus = userProject.statuses[userProject.statuses.indexOf(projectSecondStatus)];
+              break;
             }
           }
         }
@@ -80,16 +93,22 @@ export class OwnerGuard implements CanActivate {
         let task: Task;
         let status: Status;
         let project: Project;
-        label:
-        for (let userProject of req.user.projects) {
-          project = req.user.projects[req.user.projects.indexOf(userProject)];
-          for (let userStatus of userProject.statuses) {
-            status = project.statuses[project.statuses.indexOf(userStatus)];
-            for (let userTask of userStatus.tasks) {
-              if (userTask.id === reqParamsTaskId) {
-                task = status.tasks[status.tasks.indexOf(userTask)];
-                break label;
-              }
+        if (req.status) {
+          getTaskFromStatusTasks(req.status);
+        } else {
+          for (let userProject of req.user.projects) {
+            project = req.user.projects[req.user.projects.indexOf(userProject)];
+            for (let projectStatus of userProject.statuses) {
+              status = project.statuses[project.statuses.indexOf(projectStatus)];
+              getTaskFromStatusTasks(status);
+            }
+          }
+        }
+        function getTaskFromStatusTasks(projectStatus: Status): void {
+          for (let statusTask of projectStatus.tasks) {
+            if (statusTask.id === reqParamsTaskId) {
+              task = projectStatus.tasks[projectStatus.tasks.indexOf(statusTask)];
+              break;
             }
           }
         }
@@ -98,6 +117,35 @@ export class OwnerGuard implements CanActivate {
         } else {
           req.task ??= task;
           req.status ??= status;
+          req.project ??= project;
+        }
+      }
+
+      const reqParamsFieldId = +req.params.fieldId;
+      if (reqParamsFieldId) {
+        let field: Field;
+        let project: Project;
+
+        if (req.project) {
+          getFieldFromProjectFields(req.project);
+        } else {
+          for (let userProject of req.user.projects) {
+            project = req.user.projects[req.user.projects.indexOf(userProject)];
+            getFieldFromProjectFields(project);
+          }
+        }
+        function getFieldFromProjectFields(userProject: Project): void {
+          for (let projectField of userProject.fields) {
+            if (projectField.id === reqParamsFieldId) {
+              field = userProject.fields[userProject.fields.indexOf(projectField)];
+              break;
+            }
+          }
+        }
+        if (!field) {
+          throw new Error('NoFieldFound');
+        } else {
+          req.field ??= field;
           req.project ??= project;
         }
       }
@@ -112,6 +160,8 @@ export class OwnerGuard implements CanActivate {
         throw new HttpException('Второй из указанных статусов проекта не найден', HttpStatus.BAD_REQUEST);
       } else if (err.message === "NoTaskFound") {
         throw new HttpException('Указанная задача статуса не найдена', HttpStatus.BAD_REQUEST);
+      } else if (err.message === "NoFieldFound") {
+        throw new HttpException('Указанное поле проекта не найдено', HttpStatus.BAD_REQUEST);
       } else {
         throw new HttpException('Неавторизованный доступ', HttpStatus.FORBIDDEN);
       }

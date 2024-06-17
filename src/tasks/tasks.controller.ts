@@ -19,8 +19,8 @@ import { RolesGuard } from 'src/guards/roles.guard';
 export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
 
-  @ApiOperation({summary: 'Создать задачу статуса'})
-  @ApiResponse({status: 201, type: Status})
+  @ApiOperation({ summary: 'Создать задачу статуса' })
+  @ApiResponse({ status: 201, type: Status })
   @UsePipes(ValidationPipe)
   @UseGuards(OwnerGuard)
   @UseGuards(RolesGuard)
@@ -33,8 +33,8 @@ export class TasksController {
     return this.tasksService.create(req, dto);
   }
 
-  @ApiOperation({summary: 'Получить все задачи статуса'})
-  @ApiResponse({status: 200, type: [Status]})
+  @ApiOperation({ summary: 'Получить все задачи статуса' })
+  @ApiResponse({ status: 200, type: [Status] })
   @UseGuards(OwnerGuard)
   @UseGuards(RolesGuard)
   @UseGuards(JWTAuthGuard)
@@ -43,8 +43,8 @@ export class TasksController {
     return this.tasksService.getAll(statusId);
   }
 
-  @ApiOperation({summary: 'Получить задачу статуса проекта'})
-  @ApiResponse({status: 200, type: Task})
+  @ApiOperation({ summary: 'Получить задачу статуса проекта' })
+  @ApiResponse({ status: 200, type: Task })
   @UseGuards(OwnerGuard)
   @UseGuards(RolesGuard)
   @UseGuards(JWTAuthGuard)
@@ -55,8 +55,8 @@ export class TasksController {
     return this.tasksService.getOne(taskId);
   }
 
-  @ApiOperation({summary: 'Изменить задачу статуса'})
-  @ApiResponse({status: 200, description: 'Задача с id [1] успешно обновлена'})
+  @ApiOperation({ summary: 'Изменить задачу статуса' })
+  @ApiResponse({ status: 200, description: 'Задача с id [1] успешно обновлена' })
   @UsePipes(ValidationPipe)
   @UseGuards(OwnerGuard)
   @UseGuards(RolesGuard)
@@ -69,8 +69,8 @@ export class TasksController {
     return this.tasksService.update(taskId, dto);
   }
 
-  @ApiOperation({summary: 'Удалить задачу статуса'})
-  @ApiResponse({status: 200, type: Status})
+  @ApiOperation({ summary: 'Удалить задачу статуса' })
+  @ApiResponse({ status: 200, type: Status })
   @UseGuards(OwnerGuard)
   @UseGuards(RolesGuard)
   @UseGuards(JWTAuthGuard)
@@ -82,8 +82,8 @@ export class TasksController {
     return this.tasksService.delete(req, taskId);
   }
 
-  @ApiOperation({summary: 'Поставить на конкретное место по индексу в очередности задач статуса'})
-  @ApiResponse({status: 200, type: Status})
+  @ApiOperation({ summary: 'Поставить на конкретное место по индексу в очередности задач статуса' })
+  @ApiResponse({ status: 200, type: Status })
   @UsePipes(ValidationPipe)
   @UseGuards(OwnerGuard)
   @UseGuards(RolesGuard)
@@ -96,8 +96,8 @@ export class TasksController {
     return this.tasksService.OrderAt(req, dto);
   }
 
-  @ApiOperation({summary: 'Переместить в другой статус и поставить на конкретное место по индексу в очередности задач статуса'})
-  @ApiResponse({status: 200, type: Project})
+  @ApiOperation({ summary: 'Переместить в другой статус и поставить на конкретное место по индексу в очередности задач статуса' })
+  @ApiResponse({ status: 200, type: Project })
   @UsePipes(ValidationPipe)
   @UseGuards(OwnerGuard)
   @UseGuards(RolesGuard)

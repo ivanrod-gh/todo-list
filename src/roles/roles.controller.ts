@@ -9,8 +9,8 @@ export class RolesController {
 
   constructor(private readonly rolesService: RolesService) {}
 
-  @ApiOperation({summary: 'Получить все роли'})
-  @ApiResponse({status: 200, type: [Role]})
+  @ApiOperation({ summary: 'Получить все роли' })
+  @ApiResponse({ status: 200, type: [Role] })
   @Get()
   getAll() {
     return this.rolesService.getAll();

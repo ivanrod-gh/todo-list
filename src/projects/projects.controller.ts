@@ -17,8 +17,8 @@ export class ProjectsController {
   
   constructor(private readonly projectService: ProjectsService) {}
 
-  @ApiOperation({summary: 'Создать проект пользователя'})
-  @ApiResponse({status: 201, type: Project})
+  @ApiOperation({ summary: 'Создать проект пользователя' })
+  @ApiResponse({ status: 201, type: Project })
   @UsePipes(ValidationPipe)
   @UseGuards(OwnerGuard)
   @UseGuards(RolesGuard)
@@ -31,8 +31,8 @@ export class ProjectsController {
     return this.projectService.create(userId, dto);
   }
 
-  @ApiOperation({summary: 'Получить все проекты пользователя'})
-  @ApiResponse({status: 200, type: [Project]})
+  @ApiOperation({ summary: 'Получить все проекты пользователя' })
+  @ApiResponse({ status: 200, type: [Project] })
   @UseGuards(OwnerGuard)
   @UseGuards(RolesGuard)
   @UseGuards(JWTAuthGuard)
@@ -41,8 +41,8 @@ export class ProjectsController {
     return this.projectService.getAll(userId);
   }
 
-  @ApiOperation({summary: 'Получить проект пользователя'})
-  @ApiResponse({status: 200, type: Project})
+  @ApiOperation({ summary: 'Получить проект пользователя' })
+  @ApiResponse({ status: 200, type: Project })
   @UseGuards(OwnerGuard)
   @UseGuards(RolesGuard)
   @UseGuards(JWTAuthGuard)
@@ -53,8 +53,8 @@ export class ProjectsController {
     return this.projectService.getOne(projectId);
   }
 
-  @ApiOperation({summary: 'Изменить проект пользователя'})
-  @ApiResponse({status: 200, description: 'Проект с id [1] успешно обновлен'})
+  @ApiOperation({ summary: 'Изменить проект пользователя' })
+  @ApiResponse({ status: 200, description: 'Проект с id [1] успешно обновлен' })
   @UsePipes(ValidationPipe)
   @UseGuards(OwnerGuard)
   @UseGuards(RolesGuard)
@@ -67,8 +67,8 @@ export class ProjectsController {
     return this.projectService.update(projectId, dto);
   }
 
-  @ApiOperation({summary: 'Удалить проект пользователя'})
-  @ApiResponse({status: 200, description: `Проект с id [1] успешно удален`})
+  @ApiOperation({ summary: 'Удалить проект пользователя' })
+  @ApiResponse({ status: 200, description: `Проект с id [1] успешно удален` })
   @UseGuards(OwnerGuard)
   @UseGuards(RolesGuard)
   @UseGuards(JWTAuthGuard)

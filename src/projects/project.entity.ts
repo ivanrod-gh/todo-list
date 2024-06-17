@@ -14,6 +14,7 @@ import { User } from "src/users/user.entity";
 import { Status } from "src/statuses/status.entity";
 import { Task } from "src/tasks/task.entity";
 import { Exclude, classToPlain } from "class-transformer";
+import { Field } from "src/fields/field.entity";
 
 @Entity("projects")
 @Index(['userId', 'name'], { unique: true })
@@ -64,4 +65,11 @@ export class Project {
   @ApiProperty({example: "['1']", description: 'Очередность статусов проекта (согласно id)'})
   @Column("simple-array", { default: '' })
   order: string[];
+
+  @ApiProperty({type: [Field], description: 'Массив полей проекта'})
+  @OneToMany(() => Field, field => field.project, {
+    eager: true,
+    cascade: true,
+  })
+  fields: Field[]
 }

@@ -19,8 +19,8 @@ export class StatusesController {
 
   constructor(private readonly statusService: StatusesService) {}
 
-  @ApiOperation({summary: 'Создать статус (группу для задач) проекта'})
-  @ApiResponse({status: 201, type: Project})
+  @ApiOperation({ summary: 'Создать статус (группу для задач) проекта' })
+  @ApiResponse({ status: 201, type: Project })
   @UsePipes(ValidationPipe)
   @UseGuards(OwnerGuard)
   @UseGuards(RolesGuard)
@@ -33,8 +33,8 @@ export class StatusesController {
     return this.statusService.create(req, dto);
   }
 
-  @ApiOperation({summary: 'Получить все статусы проекта'})
-  @ApiResponse({status: 200, type: [Status]})
+  @ApiOperation({ summary: 'Получить все статусы проекта' })
+  @ApiResponse({ status: 200, type: [Status] })
   @UseGuards(OwnerGuard)
   @UseGuards(RolesGuard)
   @UseGuards(JWTAuthGuard)
@@ -43,8 +43,8 @@ export class StatusesController {
     return this.statusService.getAll(projectId);
   }
 
-  @ApiOperation({summary: 'Получить статус проекта'})
-  @ApiResponse({status: 200, type: Status})
+  @ApiOperation({ summary: 'Получить статус проекта' })
+  @ApiResponse({ status: 200, type: Status })
   @UseGuards(OwnerGuard)
   @UseGuards(RolesGuard)
   @UseGuards(JWTAuthGuard)
@@ -55,8 +55,8 @@ export class StatusesController {
     return this.statusService.getOne(statusId);
   }
 
-  @ApiOperation({summary: 'Изменить статус проекта'})
-  @ApiResponse({status: 200, description: 'Статус с id [1] успешно обновлен'})
+  @ApiOperation({ summary: 'Изменить статус проекта' })
+  @ApiResponse({ status: 200, description: 'Статус с id [1] успешно обновлен' })
   @UsePipes(ValidationPipe)
   @UseGuards(OwnerGuard)
   @UseGuards(RolesGuard)
@@ -69,28 +69,28 @@ export class StatusesController {
     return this.statusService.update(statusId, dto);
   }
 
-  @ApiOperation({summary: 'Удалить статус проекта'})
-  @ApiResponse({status: 200, type: Project})
+  @ApiOperation({ summary: 'Удалить статус проекта' })
+  @ApiResponse({ status: 200, type: Project })
   @UseGuards(OwnerGuard)
   @UseGuards(RolesGuard)
   @UseGuards(JWTAuthGuard)
   @Delete(':statusId')
   delete(
-    @Req() req: Request & {project: Project},
+    @Req() req: Request & { project: Project },
     @Param('statusId', ParseIntPipe) statusId: number,
   ) {
     return this.statusService.delete(req, statusId);
   }
 
-  @ApiOperation({summary: 'Поставить на конкретное место по индексу в очередности статусов проекта'})
-  @ApiResponse({status: 200, type: Project})
+  @ApiOperation({ summary: 'Поставить на конкретное место по индексу в очередности статусов проекта' })
+  @ApiResponse({ status: 200, type: Project })
   @UsePipes(ValidationPipe)
   @UseGuards(OwnerGuard)
   @UseGuards(RolesGuard)
   @UseGuards(JWTAuthGuard)
   @Put(':statusId/order-at')
   OrderAt(
-    @Req() req: Request & {project: Project, status: Status},
+    @Req() req: Request & { project: Project, status: Status },
     @Body() dto: ProjectStatusOrderDto
   ) {
     return this.statusService.OrderAt(req, dto);
