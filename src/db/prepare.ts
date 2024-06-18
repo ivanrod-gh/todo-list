@@ -6,6 +6,9 @@ import { Project } from "src/projects/project.entity";
 import { Status } from "src/statuses/status.entity";
 import { Task } from "src/tasks/task.entity";
 import { Field } from "src/fields/field.entity";
+import { StringValue } from "src/values/string-value.entity";
+import { RealValue } from "src/values/real-value.entity";
+import { ArrayElemValue } from "src/values/array-elem-value.entity";
 
 export async function prepareDB() {
   const AppDataSource = new DataSource({
@@ -15,7 +18,7 @@ export async function prepareDB() {
     username: process.env.POSTGRES_USER,
     password: process.env.POSTGRES_PASSWORD,
     database: process.env.POSTGRES_DB,
-    entities: [User, Role, Project, Status, Task, Field],
+    entities: [User, Role, Project, Status, Task, Field, StringValue, RealValue, ArrayElemValue],
     synchronize: process.env.NODE_ENV === 'production' ? false : true
   })
 

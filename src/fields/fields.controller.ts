@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Req, UseGuards, UsePipes } from '@nestjs/common';
 import { Field } from './field.entity';
-import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateFieldDto } from './dto/create-field.dto';
 import { JWTAuthGuard } from 'src/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/guards/roles.guard';
@@ -9,7 +9,10 @@ import { Project } from 'src/projects/project.entity';
 import { FieldsService } from './fields.service';
 import { ValidationPipe } from 'src/pipes/validation.pipe';
 import { UpdateFieldDto } from './dto/update-field.dto';
+import { Roles } from 'src/decorators/roles-auth.decorator';
 
+@ApiTags('Поля')
+@Roles('ADMIN', 'USER')
 @Controller('api/:projectId/fields')
 export class FieldsController {
   constructor(private readonly fieldsService: FieldsService) {}

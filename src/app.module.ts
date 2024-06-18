@@ -14,6 +14,10 @@ import { TasksModule } from './tasks/tasks.module';
 import { Task } from "./tasks/task.entity";
 import { FieldsModule } from './fields/fields.module';
 import { Field } from "./fields/field.entity";
+import { ValuesModule } from './values/values.module';
+import { StringValue } from "./values/string-value.entity";
+import { RealValue } from "./values/real-value.entity";
+import { ArrayElemValue } from "./values/array-elem-value.entity";
 
 @Module({
   controllers: [],
@@ -29,7 +33,7 @@ import { Field } from "./fields/field.entity";
       username: process.env.POSTGRES_USER,
       password: process.env.POSTGRES_PASSWORD,
       database: process.env.POSTGRES_DB,
-      entities: [User, Role, Project, Status, Task, Field],
+      entities: [User, Role, Project, Status, Task, Field, StringValue, RealValue, ArrayElemValue],
       synchronize: process.env.NODE_ENV === 'production' ? false : true
     }),
     UsersModule,
@@ -39,6 +43,7 @@ import { Field } from "./fields/field.entity";
     StatusesModule,
     TasksModule,
     FieldsModule,
+    ValuesModule,
   ]
 })
 export class AppModule {}

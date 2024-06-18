@@ -8,20 +8,45 @@ import { StatusesService } from 'src/statuses/statuses.service';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { StatusTaskOrderDto } from './dto/status-task-order.dto';
 import { Project } from 'src/projects/project.entity';
+import { ValuesService } from 'src/values/values.service';
 
 @Injectable()
 export class TasksService {
   constructor(
     @InjectRepository(Task)
     private readonly tasksRepository: Repository<Task>,
-    private readonly statusService: StatusesService
+    private readonly statusService: StatusesService,
+    private readonly valuesService: ValuesService
   ) {}
 
   async create(req: Request & { status: Status }, dto: CreateTaskDto) {
     const task = Object.assign(this.tasksRepository.create(dto), {
       statusId: req.status.id,
       projectId: req.status.projectId,
+      stringValues: [],
+      realValues: [],
+      arrayElemValues: []
     })
+
+    if (dto.stringValuesData) {
+      for (let stringValueData of dto.stringValuesData) {
+        const buildedStringValue = this.valuesService.buildStringValue(stringValueData);
+        task.stringValues = [...task.stringValues, buildedStringValue];
+      }
+    }
+    if (dto.realValuesData) {
+      for (let realValueData of dto.realValuesData) {
+        const buildedRealValue = this.valuesService.buildRealValue(realValueData);
+        task.realValues = [...task.realValues, buildedRealValue];
+      }
+    }
+    if (dto.arrayElemValuesData) {
+      for (let arrayElemValueData of dto.arrayElemValuesData) {
+        const buildedArrayElemValue = this.valuesService.buildArrayElemValue(arrayElemValueData);
+        task.arrayElemValues = [...task.arrayElemValues, buildedArrayElemValue];
+      }
+    }
+
     const savedTask = await this.tasksRepository.save(task);
     req.status.tasks = [...req.status.tasks, savedTask];
     return await this.statusService.saveWithOrdering(req.status);
@@ -44,13 +69,54 @@ export class TasksService {
     }
   }
 
-  async update(id: number, dto: UpdateTaskDto) {
-    const task = await this.tasksRepository.update(id, dto)
-    if (!task.affected) {
-      throw new HttpException('Указанный статус не был обновлен', HttpStatus.BAD_REQUEST)
-    } else {
-      return { message: `Задача с id [${id}] успешно обновлена` }
+  async update(req: Request & { task: Task }, dto: UpdateTaskDto) {
+    const task = Object.assign(req.task, dto);
+
+    if (dto.stringValuesData) {
+      const valuesData = dto.stringValuesData;
+      const valuesType: string = "stringValues";
+      task[valuesType] = this.manageFieldValues(task[valuesType], valuesData, valuesType);
     }
+    if (dto.realValuesData) {
+      const valuesData = dto.realValuesData;
+      const valuesType: string = "realValues";
+      task[valuesType] = this.manageFieldValues(task[valuesType], valuesData, valuesType);
+    }
+    if (dto.arrayElemValuesData) {
+      const valuesData = dto.arrayElemValuesData;
+      const valuesType: string = "arrayElemValues";
+      task[valuesType] = this.manageFieldValues(task[valuesType], valuesData, valuesType);
+    }
+
+    return await this.tasksRepository.save(task);
+  }
+
+  private manageFieldValues(taskValues, valuesData, valuesType: string) {
+    for (let valueData of valuesData) {
+      let valueManaged: boolean;
+      for (let taskValue of taskValues) {
+        if (taskValue.fieldId === valueData.fieldId) {
+          valueManaged = true;
+          if (valueData.destroy) {
+            taskValues = taskValues.filter(value => value.fieldId != valueData.fieldId);
+          } else {
+            taskValue.value = valueData.value;
+          }
+        }
+      }
+      if (!valueManaged && !valueData.destroy) {
+        let buildedValue;
+        if (valuesType === "stringValues") {
+          buildedValue = this.valuesService.buildStringValue(valueData);
+        } else if (valuesType === "realValues"){
+          buildedValue = this.valuesService.buildRealValue(valueData);
+        } else if (valuesType === "arrayElemValues"){
+          buildedValue = this.valuesService.buildArrayElemValue(valueData);
+        }
+        taskValues = [...taskValues, buildedValue];
+      }
+    }
+    return taskValues;
   }
 
   async delete(req: Request & { status: Status }, taskId: number) {

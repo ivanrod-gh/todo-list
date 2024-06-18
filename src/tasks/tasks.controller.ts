@@ -63,10 +63,11 @@ export class TasksController {
   @UseGuards(JWTAuthGuard)
   @Put(':taskId')
   update(
+    @Req() req: Request & { task: Task },
     @Param('taskId', ParseIntPipe) taskId: number,
     @Body() dto: UpdateTaskDto
   ) {
-    return this.tasksService.update(taskId, dto);
+    return this.tasksService.update(req, dto);
   }
 
   @ApiOperation({ summary: 'Удалить задачу статуса' })

@@ -12,23 +12,23 @@ import { User } from '../users/user.entity';
 
 @Entity("roles")
 export class Role {
-  @ApiProperty({example: 1, description: 'Уникальный идентификатор'})
+  @ApiProperty({ example: 1, description: 'Уникальный идентификатор' })
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ApiProperty({example: 'USER', description: 'Уникальная роль пользователя'})
+  @ApiProperty({ example: 'USER', description: 'Уникальная роль пользователя' })
   @Column("varchar", { unique: true, length: 50 })
   value: string;
 
-  @ApiProperty({example: 'Роль обычного пользователя', description: 'Описание роли'})
+  @ApiProperty({ example: 'Роль обычного пользователя', description: 'Описание роли' })
   @Column("text")
   description: string;
 
-  @ApiProperty({example: '2024-01-01T10:10:10', description: 'Время создания записи'})
+  @ApiProperty({ example: '2024-01-01T10:10:10', description: 'Время создания записи' })
 	@CreateDateColumn()
 	createdAt: Date;
 
-  @ApiProperty({example: '2024-01-01T10:10:10', description: 'Время обновления записи'})
+  @ApiProperty({ example: '2024-01-01T10:10:10', description: 'Время обновления записи' })
 	@UpdateDateColumn()
 	updatedAt: Date;
 

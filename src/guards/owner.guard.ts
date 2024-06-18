@@ -150,6 +150,51 @@ export class OwnerGuard implements CanActivate {
         }
       }
 
+      if (req.body.stringValuesData) {
+        const valuesData = req.body.stringValuesData;
+        const valuesType: string = 'string';
+        checkFieldValues(valuesData, valuesType);
+      }
+      if (req.body.realValuesData) {
+        const valuesData = req.body.realValuesData;
+        const valuesType: string = 'real';
+        checkFieldValues(valuesData, valuesType);
+      }
+      if (req.body.arrayElemValuesData) {
+        const valuesData = req.body.arrayElemValuesData;
+        const valuesType: string = 'array';
+        checkFieldValues(valuesData, valuesType);
+      }
+      function checkFieldValues(valuesData, valuesType: string) {
+        const fieldIds = [];
+        const arrayElemValuesData = {};
+        for (let valueData of valuesData) {
+          if (valueData.fieldId && typeof valueData.fieldId === "number") {
+            if (fieldIds.includes(valueData.fieldId)) {
+              throw new Error('DoubleFieldIdFound');
+            }
+            fieldIds.push(valueData.fieldId);
+            if (valuesType === 'array') {
+              arrayElemValuesData[valueData.fieldId] = valueData.value;
+            }
+          }
+        }
+        for (let field of req.project.fields) {
+          if (fieldIds.includes(field.id)) {
+            if (field.type !== valuesType) {
+              throw new Error('InvalidFieldType');
+            }
+            if (valuesType === 'array' && !field.value.includes(arrayElemValuesData[field.id])) {
+              throw new Error('StringNotFoundInFieldValue');
+            }
+            fieldIds.splice(fieldIds.indexOf(field.id), 1);
+          }
+        }
+        if (fieldIds.length) {
+          throw new Error('NoFieldFound');
+        }
+      }
+
       return true;
     } catch (err) {
       if (err.message === "NoProjectFound") {
@@ -162,7 +207,13 @@ export class OwnerGuard implements CanActivate {
         throw new HttpException('Указанная задача статуса не найдена', HttpStatus.BAD_REQUEST);
       } else if (err.message === "NoFieldFound") {
         throw new HttpException('Указанное поле проекта не найдено', HttpStatus.BAD_REQUEST);
-      } else {
+      } else if (err.message === "DoubleFieldIdFound") {
+        throw new HttpException('Идентификатор поля указан более 1 раза', HttpStatus.BAD_REQUEST);
+      } else if (err.message === "InvalidFieldType") {
+        throw new HttpException('Указано поле неверного типа', HttpStatus.BAD_REQUEST);
+      } else if (err.message === "StringNotFoundInFieldValue") {
+        throw new HttpException('Указанное поле не содержит переданной строки', HttpStatus.BAD_REQUEST);
+      }  else {
         throw new HttpException('Неавторизованный доступ', HttpStatus.FORBIDDEN);
       }
     }
