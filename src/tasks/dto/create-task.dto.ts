@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsOptional, IsString, Length } from "class-validator";
+import { ArrayMinSize, IsArray, IsOptional, IsString, Length } from "class-validator";
 import { CreateArrayElemValueDto } from "src/values/dto/create-array-elem-value.dto";
 import { CreateRealValueDto } from "src/values/dto/create-real-value.dto";
 import { CreateStringValueDto } from "src/values/dto/create-string-value.dto";
@@ -17,14 +17,20 @@ export class CreateTaskDto {
   readonly description?: string;
 
   @ApiProperty({ type: [CreateStringValueDto], description: 'Массив объектов данных для значений строковых полей'})
+  @IsArray({ message: 'Должен быть массивом' })
+  @ArrayMinSize(1, { message: 'Должен содержать минимум 1 элемент' })
   @IsOptional()
   readonly stringValuesData?: [CreateStringValueDto]
 
   @ApiProperty({ type: [CreateRealValueDto], description: 'Массив объектов данных для значений числовых полей'})
+  @IsArray({ message: 'Должен быть массивом' })
+  @ArrayMinSize(1, { message: 'Должен содержать минимум 1 элемент' })
   @IsOptional()
   readonly realValuesData?: [CreateRealValueDto]
 
   @ApiProperty({ type: [CreateArrayElemValueDto], description: 'Массив объектов данных для значений массивных полей'})
+  @IsArray({ message: 'Должен быть массивом' })
+  @ArrayMinSize(1, { message: 'Должен содержать минимум 1 элемент' })
   @IsOptional()
   readonly arrayElemValuesData?: [CreateArrayElemValueDto]
 }

@@ -15,10 +15,10 @@ export class UsersService {
   ) {}
 
   async create(dto: CreateUserDto) {
-    const user = this.userRepository.create({...dto, encryptedPassword: dto.password});
+    const user = this.userRepository.create({ ...dto, encryptedPassword: dto.password });
 
     const baseRole = await this.roleService.getRoleByValue('USER');
-    user.roles = [baseRole]
+    user.roles = [baseRole];
 
     return await this.userRepository.save(user);
   }
@@ -28,11 +28,21 @@ export class UsersService {
   }
 
   async getUserByEmail(email: string) {
-    return await this.userRepository.findOneBy({email});
+    const users = await this.userRepository.findBy({ email });
+    if (users.length) {
+      return users[0];
+    } else {
+      return null;
+    }
   }
 
   async getUserById(id: number) {
-    return await this.userRepository.findOneBy({id});
+    const users = await this.userRepository.findBy({ id });
+    if (users.length) {
+      return users[0];
+    } else {
+      return null;
+    }
   }
 }
 

@@ -66,20 +66,19 @@ export class ValidationPipe implements PipeTransform {
           break;
         }
       }
-
-      if (value.stringValuesData) {
+      if (value.stringValuesData && Array.isArray(value.stringValuesData)) {
         const valuesData = value.stringValuesData;
         const valuesType: string = 'stringValuesData';
         const dto = (this.req.method === "POST") ? CreateStringValueDto : UpdateStringValueDto
         await checkFieldValues(valuesData, valuesType, dto);
       }
-      if (value.realValuesData) {
+      if (value.realValuesData && Array.isArray(value.realValuesData)) {
         const valuesData = value.realValuesData;
         const valuesType: string = 'realValuesData';
         const dto = (this.req.method === "POST") ? CreateRealValueDto : UpdateRealValueDto
         await checkFieldValues(valuesData, valuesType, dto);
       }
-      if (value.arrayElemValuesData) {
+      if (value.arrayElemValuesData && Array.isArray(value.arrayElemValuesData)) {
         const valuesData = value.arrayElemValuesData;
         const valuesType: string = 'arrayElemValuesData';
         const dto = (this.req.method === "POST") ? CreateArrayElemValueDto : UpdateArrayElemValueDto

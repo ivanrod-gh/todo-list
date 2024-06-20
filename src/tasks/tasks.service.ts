@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { Task } from './task.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { Status } from 'src/statuses/status.entity';
 import { StatusesService } from 'src/statuses/statuses.service';
@@ -16,7 +16,9 @@ export class TasksService {
     @InjectRepository(Task)
     private readonly tasksRepository: Repository<Task>,
     private readonly statusService: StatusesService,
-    private readonly valuesService: ValuesService
+    private readonly valuesService: ValuesService,
+    @InjectEntityManager()
+    private readonly taskManager: EntityManager
   ) {}
 
   async create(req: Request & { status: Status }, dto: CreateTaskDto) {
@@ -49,7 +51,7 @@ export class TasksService {
 
     const savedTask = await this.tasksRepository.save(task);
     req.status.tasks = [...req.status.tasks, savedTask];
-    return await this.statusService.saveWithOrdering(req.status);
+    return await this.statusService.updateOrdering(req.status);
   }
 
   async getAll(statusId: number) {
@@ -61,11 +63,11 @@ export class TasksService {
   }
 
   async getOne(id: number) {
-    const task = await this.tasksRepository.findOneBy({ id });
-    if (!task) {
-      throw new HttpException('Указанная задача не найдена', HttpStatus.BAD_REQUEST)
+    const tasks = await this.tasksRepository.findBy({ id });
+    if (tasks?.length) {
+      return tasks[0];
     } else {
-      return task;
+      throw new HttpException('Указанная задача не найдена', HttpStatus.BAD_REQUEST)
     }
   }
 
@@ -88,7 +90,10 @@ export class TasksService {
       task[valuesType] = this.manageFieldValues(task[valuesType], valuesData, valuesType);
     }
 
-    return await this.tasksRepository.save(task);
+    const savedTask = await this.taskManager.transaction(async (transactionalManager: EntityManager) => {
+      return await transactionalManager.save(task);
+    })
+    return savedTask;
   }
 
   private manageFieldValues(taskValues, valuesData, valuesType: string) {
@@ -120,8 +125,10 @@ export class TasksService {
   }
 
   async delete(req: Request & { status: Status }, taskId: number) {
-    req.status.tasks = req.status.tasks.filter((task) => task.id !== taskId)
-    return await this.statusService.saveWithOrdering(req.status)
+    await this.tasksRepository.delete(taskId);
+
+    req.status.tasks = req.status.tasks.filter((task) => task.id !== taskId);
+    return await this.statusService.updateOrdering(req.status);
   }
 
   async OrderAt(req: Request & { status: Status, task: Task }, dto: StatusTaskOrderDto) {
@@ -129,10 +136,10 @@ export class TasksService {
   }
 
   async MoveOrderAt(req: Request & {
-    project: Project,
-    status: Status,
-    secondStatus: Status,
-    task: Task
+      project: Project,
+      status: Status,
+      secondStatus: Status,
+      task: Task
     }, dto: StatusTaskOrderDto) {
     return await this.statusService.moveInsertIntoOrderAt(req.project, req.status, req.secondStatus, req.task, dto.orderAt);
   }

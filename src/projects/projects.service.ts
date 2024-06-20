@@ -27,55 +27,57 @@ export class ProjectsService {
   }
 
   async getOne(id: number) {
-    const project = await this.projectRepository.findOneBy({ id });
-    if (!project) {
-      throw new HttpException('Указанный проект не найден', HttpStatus.BAD_REQUEST)
+    const projects = await this.projectRepository.findBy({ id });
+    if (projects?.length) {
+      return projects[0];
     } else {
-      return project;
+      throw new HttpException('Указанный проект не найден', HttpStatus.BAD_REQUEST);
     }
   }
 
   async update(id: number, dto: UpdateProjectDto) {
     const project = await this.projectRepository.update(id, dto)
     if (!project.affected) {
-      throw new HttpException('Указанный проект не был обновлен', HttpStatus.BAD_REQUEST)
+      throw new HttpException('Указанный проект не был обновлен', HttpStatus.BAD_REQUEST);
     } else {
-      return { message: `Проект с id [${id}] успешно обновлен` }
+      return { message: `Проект с id [${id}] успешно обновлен` };
     }
   }
 
   async delete(id: number) {
     const project = await this.projectRepository.delete({ id });
     if (!project.affected) {
-      throw new HttpException('Указанный проект не был удален', HttpStatus.BAD_REQUEST)
+      throw new HttpException('Указанный проект не был удален', HttpStatus.BAD_REQUEST);
     } else {
-      return { message: `Проект с id [${id}] успешно удален` }
+      return { message: `Проект с id [${id}] успешно удален` };
     }
   }
 
-  async saveWithOrdering(project : Project) {
-    project.order = await this.manageOrder(project)
-    return await this.projectRepository.save(project);
+  async updateOrdering(project : Project) {
+    project.order = await this.manageOrder(project);
+    await this.projectRepository.update(project.id, { order: project.order });
+    return project;
   }
 
-  async manageOrder(project : Project) {
+  private async manageOrder(project : Project) {
     let projectOrder = project.order;
     const statusesIds = project.statuses.map((status) => status.id.toString());
     if (projectOrder.length < statusesIds.length) {
-      const arrayDiff = statusesIds.filter(statusId => !projectOrder.includes(statusId))
-      projectOrder = projectOrder.concat(arrayDiff)
+      const arrayDiff = statusesIds.filter(statusId => !projectOrder.includes(statusId));
+      projectOrder = projectOrder.concat(arrayDiff);
     } else {
-      projectOrder = projectOrder.filter(statusId => statusesIds.includes(statusId))
+      projectOrder = projectOrder.filter(statusId => statusesIds.includes(statusId));
     }
     return projectOrder;
   }
 
   async insertIntoOrderAt(project : Project, statusId: string, insertAt: number) {
     project.order = this.manageInsertingInOrder(project, statusId, insertAt);
-    return await this.projectRepository.save(project);
+    await this.projectRepository.update(project.id, { order: project.order });
+    return project;
   }
 
-  manageInsertingInOrder(project : Project, statusId: string, insertAt: number) {
+  private manageInsertingInOrder(project : Project, statusId: string, insertAt: number) {
     let projectOrder = project.order;
     if (insertAt < 0 || insertAt > projectOrder.length - 1) {
       throw new HttpException('Указан неверный индекс очередности', HttpStatus.BAD_REQUEST);

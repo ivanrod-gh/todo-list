@@ -34,7 +34,8 @@ import { ArrayElemValue } from "./values/array-elem-value.entity";
       password: process.env.POSTGRES_PASSWORD,
       database: process.env.POSTGRES_DB,
       entities: [User, Role, Project, Status, Task, Field, StringValue, RealValue, ArrayElemValue],
-      synchronize: process.env.NODE_ENV === 'production' ? false : true
+      synchronize: process.env.NODE_ENV === 'production' ? false : true,
+      logging: true,
     }),
     UsersModule,
     RolesModule,

@@ -150,17 +150,17 @@ export class OwnerGuard implements CanActivate {
         }
       }
 
-      if (req.body.stringValuesData) {
+      if (req.body.stringValuesData && Array.isArray(req.body.stringValuesData)) {
         const valuesData = req.body.stringValuesData;
         const valuesType: string = 'string';
         checkFieldValues(valuesData, valuesType);
       }
-      if (req.body.realValuesData) {
+      if (req.body.realValuesData && Array.isArray(req.body.realValuesData)) {
         const valuesData = req.body.realValuesData;
         const valuesType: string = 'real';
         checkFieldValues(valuesData, valuesType);
       }
-      if (req.body.arrayElemValuesData) {
+      if (req.body.arrayElemValuesData && Array.isArray(req.body.arrayElemValuesData)) {
         const valuesData = req.body.arrayElemValuesData;
         const valuesType: string = 'array';
         checkFieldValues(valuesData, valuesType);
