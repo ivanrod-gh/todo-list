@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable, forwardRef } from '@nestjs/common';
 import { Task } from './task.entity';
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
@@ -15,6 +15,7 @@ export class TasksService {
   constructor(
     @InjectRepository(Task)
     private readonly tasksRepository: Repository<Task>,
+    @Inject(forwardRef(() => StatusesService))
     private readonly statusService: StatusesService,
     private readonly valuesService: ValuesService,
     @InjectEntityManager()
@@ -51,7 +52,7 @@ export class TasksService {
 
     const savedTask = await this.tasksRepository.save(task);
     req.status.tasks = [...req.status.tasks, savedTask];
-    return await this.statusService.updateOrdering(req.status);
+    return await this.statusService.updateOrder(req.status);
   }
 
   async getAll(statusId: number) {
@@ -128,7 +129,7 @@ export class TasksService {
     await this.tasksRepository.delete(taskId);
 
     req.status.tasks = req.status.tasks.filter((task) => task.id !== taskId);
-    return await this.statusService.updateOrdering(req.status);
+    return await this.statusService.updateOrder(req.status);
   }
 
   async OrderAt(req: Request & { status: Status, task: Task }, dto: StatusTaskOrderDto) {
@@ -142,5 +143,9 @@ export class TasksService {
       task: Task
     }, dto: StatusTaskOrderDto) {
     return await this.statusService.moveInsertIntoOrderAt(req.project, req.status, req.secondStatus, req.task, dto.orderAt);
+  }
+
+  async updateStatusId(task: Task, status: Status) {
+    await this.tasksRepository.update(task.id, { statusId: status.id });
   }
 }

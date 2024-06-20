@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable, forwardRef } from '@nestjs/common';
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import { Status } from './status.entity';
 import { EntityManager, Repository } from 'typeorm';
@@ -8,6 +8,7 @@ import { Project } from 'src/projects/project.entity';
 import { ProjectsService } from 'src/projects/projects.service';
 import { ProjectStatusOrderDto } from './dto/project-status-order.dto';
 import { Task } from 'src/tasks/task.entity';
+import { TasksService } from 'src/tasks/tasks.service';
 
 @Injectable()
 export class StatusesService {
@@ -15,6 +16,8 @@ export class StatusesService {
     @InjectRepository(Status)
     private readonly statusRepository: Repository<Status>,
     private readonly projectService: ProjectsService,
+    @Inject(forwardRef(() => TasksService))
+    private readonly tasksService: TasksService,
 		@InjectEntityManager()
 		private readonly statusManager: EntityManager
   ) {}
@@ -26,7 +29,7 @@ export class StatusesService {
     });
     const savedStatus = await this.statusRepository.save(status);
     req.project.statuses = [...req.project.statuses, savedStatus];
-    return await this.projectService.updateOrdering(req.project);
+    return await this.projectService.updateOrder(req.project);
   }
 
   async getAll(projectId: number) {
@@ -57,14 +60,14 @@ export class StatusesService {
 
   async delete(req: Request & { project: Project }, statusId: number) {
     req.project.statuses = req.project.statuses.filter((status) => status.id !== statusId)
-    return await this.projectService.updateOrdering(req.project);
+    return await this.projectService.updateOrder(req.project);
   }
 
   async OrderAt(req: Request & { project: Project, status: Status }, dto: ProjectStatusOrderDto) {
     return await this.projectService.insertIntoOrderAt(req.project, req.status.id.toString(), dto.orderAt);
   }
 
-  async updateOrdering(status : Status) {
+  async updateOrder(status : Status) {
     status.order = this.manageOrder(status)
     await this.statusRepository.update(status.id, { order: status.order });
     return status;
@@ -107,13 +110,17 @@ export class StatusesService {
 
   async moveInsertIntoOrderAt(project: Project, status: Status, secondStatus: Status, task: Task, insertAt: number) {
     secondStatus.order = this.manageInsertingInOrder(secondStatus, task.id.toString(), insertAt, false);
-    secondStatus.tasks = [...secondStatus.tasks, task];
 
     status.tasks = status.tasks.filter(statusTask => statusTask.id !== task.id);
     status.order = this.manageOrder(status);
 
+    this.tasksService.updateStatusId(task, secondStatus);
+    task.statusId = secondStatus.id;
+    
+    secondStatus.tasks = [...secondStatus.tasks, task];
+
     await this.statusManager.transaction(async (transactionalManager: EntityManager) => {
-      await transactionalManager.save(secondStatus);
+      await transactionalManager.update(Status, secondStatus.id, { order: secondStatus.order });
       await transactionalManager.update(Status, status.id, { order: status.order });
     })
     return project;

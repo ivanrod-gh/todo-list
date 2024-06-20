@@ -53,7 +53,7 @@ export class ProjectsService {
     }
   }
 
-  async updateOrdering(project : Project) {
+  async updateOrder(project : Project) {
     project.order = await this.manageOrder(project);
     await this.projectRepository.update(project.id, { order: project.order });
     return project;
