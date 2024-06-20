@@ -33,8 +33,22 @@ export class ValidationPipe implements PipeTransform {
     let messages = {}
     if (errors.length) {
       for (let elem of errors) {
-        messages[elem.property] ??= [];
-        messages[elem.property].push(...Object.values(elem.constraints));
+        if (elem.children.length) {
+          for (let child of elem.children) {
+            if (child.children.length) {
+              for (let childElem of child.children) {
+                const index = elem[childElem.property].indexOf(childElem.target);
+                messages[elem.property] ??= {};
+                messages[elem.property][index] ??= {};
+                messages[elem.property][index][childElem.property] ??= [];
+                messages[elem.property][index][childElem.property].push(...Object.values(childElem.constraints));
+              }
+            }
+          }
+        } else {
+          messages[elem.property] ??= [];
+          messages[elem.property].push(...Object.values(elem.constraints));
+        }
       }
     }
 
@@ -64,39 +78,6 @@ export class ValidationPipe implements PipeTransform {
           messages['name'] ??= [];
           messages['name'].push('Задача с таким именем уже существует');
           break;
-        }
-      }
-      if (value.stringValuesData && Array.isArray(value.stringValuesData)) {
-        const valuesData = value.stringValuesData;
-        const valuesType: string = 'stringValuesData';
-        const dto = (this.req.method === "POST") ? CreateStringValueDto : UpdateStringValueDto
-        await checkFieldValues(valuesData, valuesType, dto);
-      }
-      if (value.realValuesData && Array.isArray(value.realValuesData)) {
-        const valuesData = value.realValuesData;
-        const valuesType: string = 'realValuesData';
-        const dto = (this.req.method === "POST") ? CreateRealValueDto : UpdateRealValueDto
-        await checkFieldValues(valuesData, valuesType, dto);
-      }
-      if (value.arrayElemValuesData && Array.isArray(value.arrayElemValuesData)) {
-        const valuesData = value.arrayElemValuesData;
-        const valuesType: string = 'arrayElemValuesData';
-        const dto = (this.req.method === "POST") ? CreateArrayElemValueDto : UpdateArrayElemValueDto
-        await checkFieldValues(valuesData, valuesType, dto);
-      }
-      async function checkFieldValues(valuesData, valuesType: string, dto) {
-        for (let fieldValue of valuesData) {
-          const obj = plainToClass(dto, fieldValue);
-          const errors = await validate(obj);
-          if (errors.length) {
-            messages[valuesType] ??= [];
-            const errorsLastIndex = messages[valuesType].length;
-            for (let elem of errors) {
-              messages[valuesType][errorsLastIndex] ??= {};
-              messages[valuesType][errorsLastIndex][elem.property] ??= [];
-              messages[valuesType][errorsLastIndex][elem.property].push(...Object.values(elem.constraints));
-            }
-          }
         }
       }
     }

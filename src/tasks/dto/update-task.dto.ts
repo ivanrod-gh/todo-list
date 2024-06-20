@@ -1,5 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsOptional, IsString, Length } from "class-validator";
+import { Type } from "class-transformer";
+import { ArrayMinSize, IsArray, IsOptional, IsString, Length, ValidateNested } from "class-validator";
 import { UpdateArrayElemValueDto } from "src/values/dto/update-array-elem-value.dto";
 import { UpdateRealValueDto } from "src/values/dto/update-real-value.dto";
 import { UpdateStringValueDto } from "src/values/dto/update-string-value.dto";
@@ -18,14 +19,26 @@ export class UpdateTaskDto {
   readonly description?: string;
 
   @ApiProperty({ type: [UpdateStringValueDto], description: 'Массив объектов данных для значений строковых полей'})
+  @IsArray({ message: 'Должен быть массивом' })
+  @ArrayMinSize(1, { message: 'Должен содержать минимум 1 элемент' })
+  @ValidateNested({ each: true })
+  @Type(() => UpdateStringValueDto )
   @IsOptional()
-  readonly stringValuesData?: [UpdateStringValueDto]
+  readonly stringValuesData?: UpdateStringValueDto[]
   
   @ApiProperty({ type: [UpdateRealValueDto], description: 'Массив объектов данных для значений числовых полей'})
+  @IsArray({ message: 'Должен быть массивом' })
+  @ArrayMinSize(1, { message: 'Должен содержать минимум 1 элемент' })
+  @ValidateNested({ each: true })
+  @Type(() => UpdateRealValueDto )
   @IsOptional()
-  readonly realValuesData?: [UpdateRealValueDto]
+  readonly realValuesData?: UpdateRealValueDto[]
 
   @ApiProperty({ type: [UpdateArrayElemValueDto], description: 'Массив объектов данных для значений массивных полей'})
+  @IsArray({ message: 'Должен быть массивом' })
+  @ArrayMinSize(1, { message: 'Должен содержать минимум 1 элемент' })
+  @ValidateNested({ each: true })
+  @Type(() => UpdateArrayElemValueDto )
   @IsOptional()
-  readonly arrayElemValuesData?: [UpdateArrayElemValueDto]
+  readonly arrayElemValuesData?: UpdateArrayElemValueDto[]
 }
