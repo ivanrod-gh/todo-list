@@ -1,0 +1,13 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: ./docker/app/Dockerfile
+    depends_on:
+      - db
+    ports:
+      - 3000:3000
+  db:
+    build:
+      context: .
+      dockerfile: ./docker/postgres/Dockerfile

@@ -19,21 +19,34 @@ export async function prepareDB() {
     password: process.env.POSTGRES_PASSWORD,
     database: process.env.POSTGRES_DB,
     entities: [User, Role, Project, Status, Task, Field, StringValue, RealValue, ArrayElemValue],
-    synchronize: process.env.NODE_ENV === 'production' ? false : true
+    synchronize: true,
   })
 
-  await AppDataSource.initialize();
+  let unconnected: boolean = true;
+  while (unconnected) {
+    try {
+      await AppDataSource.initialize();
+      console.log('The connection to the database was successfully established');
+      unconnected = false;
+    } catch {
+      console.log('Error: Failed to connect to the database. Waiting 1000ms');
+      await new Promise(function(resolve, reject) {
+        setTimeout(() => resolve('Another attempt to connect to the database'), 1000);
+      }).then(result => console.log(result));
+    }
+  }
+
   const manager = AppDataSource.manager
 
-  if (!await manager.findOneBy(Role, {value: 'ADMIN'})) {
-    const newRole = manager.create(Role, {value: 'ADMIN', description: 'Роль администратора'});
+  if (!await manager.findOneBy(Role, { value: 'ADMIN' })) {
+    const newRole = manager.create(Role, { value: 'ADMIN', description: 'Роль администратора' });
     await manager.save(newRole);
   }
-  if (!await manager.findOneBy(Role, {value: 'USER'})) {
-    const newRole = manager.create(Role, {value: 'USER', description: 'Роль обычного пользователя'});
+  if (!await manager.findOneBy(Role, { value: 'USER' })) {
+    const newRole = manager.create(Role, { value: 'USER', description: 'Роль обычного пользователя' });
     await manager.save(newRole);
   }
-  if (!await manager.findOneBy(User, {email: process.env.ROOT_USER_MAIL})) {
+  if (!await manager.findOneBy(User, { email: process.env.ROOT_USER_MAIL })) {
     const hashPassword = await bcrypt.hash(process.env.ROOT_USER_PASSWORD, 10);
     const rootUser = manager.create(User, {
       email: process.env.ROOT_USER_MAIL,
