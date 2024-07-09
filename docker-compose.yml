@@ -1,13 +1,27 @@
 services:
-  app:
+  general:
     build:
-      context: .
-      dockerfile: ./docker/app/Dockerfile
+      context: ./general
+      dockerfile: ./docker/general/Dockerfile
     depends_on:
       - db
+    restart: always
     ports:
       - 3000:3000
+  auth:
+    build:
+      context: ./auth
+      dockerfile: ./docker/auth/Dockerfile
+    restart: always
+    ports:
+      - 3001:3001
   db:
     build:
-      context: .
+      context: ./general
       dockerfile: ./docker/postgres/Dockerfile
+    env_file: ./general/.env.production
+  rabbitmq:
+    image: rabbitmq:3.13.4-management
+    environment:
+      - RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS=-rabbit disk_free_limit 536870912
+    env_file: ./general/.env.production

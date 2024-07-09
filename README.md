@@ -1,73 +1,59 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# Node Server 07
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Тестовое приложение на фреймворке NestJS с TypeScript.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+Используемая СУБД - PostgreSQL.
 
-## Description
+Приложение состоит из двух микросервисов - **general** и **auth**, связанных при помощи RabbitMQ.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+Микросервисы принимают как сообщения от брокера, так и HTTP запросы.
 
-## Installation
+Для запуска приложения в окружениях `development` и `production` используются переменные окружения, объявляемые посредством .env файлов.
 
-```bash
-$ npm install
-```
+Микросервис **general** запускается на `localhost:3000/`, микросервис **auth** - на `localhost:3001/`.
 
-## Running the app
+## Запуск в окружении Development
 
-```bash
-# development
-$ npm run start
+Приложение запускается, используя установленные в системе PostgreSQL и RabbitMQ.
 
-# watch mode
+Для создания .env файлов, требуемых приложением, есть примеры с описанием переменных окружения:
+- `general/.env.development.example`
+- `auth/.env.development.example`
+
+Можно выполнить серию переименований .env файлов для того, чтобы передать приложению часть начальных настроек:
+- `general/.env.development.example` -> `general/.env.development`
+- `auth/.env.development.example` -> `auth/.env.development`
+
+Дополнительно для PostgreSQL:
+- должен быть создан пользователь, логин и пароль которого необходимо указать в `general/.env.development` как `POSTGRES_USER` и `POSTGRES_PASSWORD` соответственно.
+- должна быть создана база данных, название которой необходимо указать в `general/.env.development` как `POSTGRES_DB`.
+
+При необходимости можно поменять настройки из .env файлов.
+
+Приложение запускается из корня проекта командой:
+```sh
 $ npm run start:dev
-
-# production mode
-$ npm run start:prod
 ```
 
-## Test
+## Запуск в окружении Production
 
-```bash
-# unit tests
-$ npm run test
+Приложение запускается в Docker-контейнерах.
 
-# e2e tests
-$ npm run test:e2e
+Для создания .env файлов, требуемых приложением, есть примеры с описанием переменных окружения:
+- `general/.env.production.example`
+- `auth/.env.production.example`
 
-# test coverage
-$ npm run test:cov
+Можно выполнить серию переименований .env файлов для того, чтобы передать приложению начальные настройки:
+- `general/.env.production.example` -> `general/.env.production`
+- `auth/.env.production.example` -> `auth/.env.production`
+
+Настроек из переименованных .env файлов **достаточно** для запуска в production.
+
+Приложение запускается из корня проекта командой:
+```sh
+$ docker compose up
 ```
 
-## Support
+## Документация
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](LICENSE).
+REST API документация становится доступна по адресам `localhost:3000/api/docs/` и `localhost:3001/api/docs/` после запуска приложения.
