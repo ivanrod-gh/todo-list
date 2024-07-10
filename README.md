@@ -34,6 +34,8 @@
 
 Приложение запускается из корня проекта командой:
 ```sh
+$ npm i
+$ npm run packages:install
 $ npm run start:dev
 ```
 
