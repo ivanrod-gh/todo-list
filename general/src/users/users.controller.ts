@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, UseGuards, UsePipes, Inject, UnauthorizedException } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, UsePipes, UnauthorizedException } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from "./dto/create-user.dto";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
@@ -51,5 +51,10 @@ export class UsersController {
   @MessagePattern({ role: 'user', cmd: 'create' })
   createNewUser(dto: CreateUserDto) {
     return this.usersService.create(dto);
+  }
+
+  @Get('request')
+  sendRequest() {
+    return this.usersService.sendRequest();
   }
 }

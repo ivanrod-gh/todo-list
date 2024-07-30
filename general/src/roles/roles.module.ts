@@ -11,9 +11,6 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
   providers: [RolesService],
   imports: [
     TypeOrmModule.forFeature([Role]),
-    // ClientsModule.register([
-    //   {name: 'MATH_SERVICE', transport: Transport.TCP}
-    // ])
   ],
   exports: [
     RolesService,
