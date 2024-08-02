@@ -1,11 +1,9 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { User } from './user.entity';
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { RolesService } from 'src/roles/roles.service';
-import { ClientProxy } from '@nestjs/microservices';
-import { TimeoutError, catchError, firstValueFrom, throwError, timeout } from 'rxjs';
 
 @Injectable()
 export class UsersService {
@@ -14,7 +12,6 @@ export class UsersService {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     private readonly roleService: RolesService,
-    @Inject('GO_CLIENT') private goClient: ClientProxy,
   ) {}
 
   async create(dto: CreateUserDto) {
@@ -52,25 +49,7 @@ export class UsersService {
       return null;
     }
   }
-
-  async sendRequest() {
-
-    const candidate = await firstValueFrom(this
-      .goClient
-      .send({ cmd: 'get' }, "request_string абвгде")
-      .pipe(timeout(5000), catchError(err => this.handleMicroserviceError(err)))
-    );
-    // console.log(candidate)
-
-    return {"request": candidate}
-  }
-
-  private handleMicroserviceError(err: Error) {
-    if (err instanceof TimeoutError) {
-      return throwError(() => new Error('Timeout'));
-    }
-    return throwError(() => err);
-  }
 }
+
 
 

@@ -11,7 +11,8 @@
     "packages:install": "concurrently \"npm run packages:general:install\" \"npm run packages:auth:install\"",
     "start:general:dev": "cd general && NODE_ENV=development nest start --watch",
     "start:auth:dev": "cd auth && NODE_ENV=development nest start --watch",
-    "start:dev": "concurrently \"npm run start:general:dev\" \"npm run start:auth:dev\""
+    "start:field-values:dev": "cd field-values && GO_ENV=development go run cmd/main.go",
+    "start:dev": "concurrently \"npm run start:general:dev\" \"npm run start:auth:dev\" \"npm run start:field-values:dev\""
   },
   "dependencies": {
     "concurrently": "^8.2.2"

@@ -1,8 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Project } from "src/projects/project.entity";
-import { ArrayElemValue } from "src/values/array-elem-value.entity";
-import { RealValue } from "src/values/real-value.entity";
-import { StringValue } from "src/values/string-value.entity";
 import { Column, CreateDateColumn, Entity, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 export enum FieldEnum { "real" , "string", "array" }
@@ -44,19 +41,4 @@ export class Field {
   @ApiProperty({ example: '1', description: 'Id проекта, которому принадлежит поле' })
   @Column()
   projectId: number;
-
-  @OneToMany(() => StringValue, stringValue => stringValue.field, {
-    cascade: true,
-  })
-  stringValues: StringValue[]
-
-  @OneToMany(() => RealValue, realValue => realValue.field, {
-    cascade: true,
-  })
-  realValues: RealValue[]
-
-  @OneToMany(() => ArrayElemValue, arrayElemValue => arrayElemValue.field, {
-    cascade: true,
-  })
-  arrayElemValues: ArrayElemValue[]
 }

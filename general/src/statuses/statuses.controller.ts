@@ -76,7 +76,7 @@ export class StatusesController {
   @UseGuards(JWTAuthGuard)
   @Delete(':statusId')
   delete(
-    @Req() req: Request & { project: Project },
+    @Req() req: Request & { project: Project, status: Status },
     @Param('statusId', ParseIntPipe) statusId: number,
   ) {
     return this.statusService.delete(req, statusId);

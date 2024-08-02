@@ -9,6 +9,8 @@ import { ProjectsService } from 'src/projects/projects.service';
 import { ProjectStatusOrderDto } from './dto/project-status-order.dto';
 import { Task } from 'src/tasks/task.entity';
 import { TasksService } from 'src/tasks/tasks.service';
+import { TimeoutError, catchError, firstValueFrom, throwError, timeout } from 'rxjs';
+import { ClientProxy } from '@nestjs/microservices';
 
 @Injectable()
 export class StatusesService {
@@ -19,7 +21,8 @@ export class StatusesService {
     @Inject(forwardRef(() => TasksService))
     private readonly tasksService: TasksService,
 		@InjectEntityManager()
-		private readonly statusManager: EntityManager
+		private readonly statusManager: EntityManager,
+    @Inject('GO_CLIENT') private goClient: ClientProxy,
   ) {}
 
   async create(req: Request & {project: Project}, dto: CreateStatusDto) {
@@ -58,8 +61,20 @@ export class StatusesService {
     }
   }
 
-  async delete(req: Request & { project: Project }, statusId: number) {
-    req.project.statuses = req.project.statuses.filter((status) => status.id !== statusId)
+  async delete(req: Request & { project: Project, status: Status }, id: number) {
+    if (req.status.tasks.length) {
+      let data = {
+        taskIds: [],
+      }
+      req.status.tasks.forEach((elem) => data.taskIds.push(elem.id));
+      await this.microRequest({ cmd: 'cascadeDelete' }, data);
+    }
+
+    let status = await this.statusRepository.delete(id);
+    if (!status.affected) {
+      throw new HttpException('Указанный статус проекта не был удален', HttpStatus.BAD_REQUEST);
+    }
+    req.project.statuses = req.project.statuses.filter((status) => status.id !== id)
     return await this.projectService.updateOrder(req.project);
   }
 
@@ -124,6 +139,26 @@ export class StatusesService {
       await transactionalManager.update(Status, status.id, { order: status.order });
     })
     return project;
+  }
+
+  private async microRequest(pattern: {}, data) {
+    let response = await firstValueFrom(this
+      .goClient
+      .send(pattern, data)
+      .pipe(timeout(5000), catchError(err => this.handleMicroserviceError(err)))
+    );
+    if (response.error) {
+      throw new HttpException(response.error, HttpStatus.BAD_REQUEST);
+    }
+
+    return response;
+  }
+
+  private handleMicroserviceError(err: Error) {
+    if (err instanceof TimeoutError) {
+      return throwError(() => new Error('Timeout'));
+    }
+    return throwError(() => err);
   }
 }
 

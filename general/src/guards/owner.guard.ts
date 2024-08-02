@@ -40,6 +40,7 @@ export class OwnerGuard implements CanActivate {
           getStatusFromProjectStatuses(req.project);
         } else {
           for (let userProject of req.user.projects) {
+            if (status) break;
             project = req.user.projects[req.user.projects.indexOf(userProject)];
             getStatusFromProjectStatuses(project);
           }
@@ -68,6 +69,7 @@ export class OwnerGuard implements CanActivate {
           getSecondStatusFromProjectStatuses(req.project);
         } else {
           for (let userProject of req.user.projects) {
+            if (secondStatus) break;
             project = req.user.projects[req.user.projects.indexOf(userProject)];
             getSecondStatusFromProjectStatuses(project);
           }
@@ -97,8 +99,10 @@ export class OwnerGuard implements CanActivate {
           getTaskFromStatusTasks(req.status);
         } else {
           for (let userProject of req.user.projects) {
+            if (task) break;
             project = req.user.projects[req.user.projects.indexOf(userProject)];
             for (let projectStatus of userProject.statuses) {
+              if (task) break;
               status = project.statuses[project.statuses.indexOf(projectStatus)];
               getTaskFromStatusTasks(status);
             }
@@ -130,6 +134,7 @@ export class OwnerGuard implements CanActivate {
           getFieldFromProjectFields(req.project);
         } else {
           for (let userProject of req.user.projects) {
+            if (field) break;
             project = req.user.projects[req.user.projects.indexOf(userProject)];
             getFieldFromProjectFields(project);
           }

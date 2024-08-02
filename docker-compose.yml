@@ -15,11 +15,21 @@ services:
     restart: always
     ports:
       - 3001:3001
+  field-values:
+    build:
+      context: ./field-values
+      dockerfile: ./docker/field-values/Dockerfile
+    restart: always
   db:
     build:
       context: ./general
       dockerfile: ./docker/postgres/Dockerfile
     env_file: ./general/.env.production
+  db-go:
+    build:
+      context: ./field-values
+      dockerfile: ./docker/postgres/Dockerfile
+    env_file: ./field-values/.env.production
   rabbitmq:
     image: rabbitmq:3.13.4-management
     environment:

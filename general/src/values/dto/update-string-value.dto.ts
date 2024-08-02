@@ -12,7 +12,7 @@ export class UpdateStringValueDto {
   @IsString({ message: 'Должно быть строкой' })
   readonly value: string;
 
-  @ApiProperty({ example: true, description: 'Флаг (true или false) для уничтожения значения поля' })
+  @ApiProperty({ example: false, description: 'Флаг (true или false) для уничтожения значения поля' })
   @IsOptional()
   @IsBoolean({ message: 'Должен быть true или false' })
   readonly destroy?: boolean;

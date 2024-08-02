@@ -74,8 +74,9 @@ export class ProjectsController {
   @UseGuards(JWTAuthGuard)
   @Delete(':projectId')
   delete(
+    @Req() req: Request & { project: Project },
     @Param('projectId', ParseIntPipe) projectId: number,
   ) {
-    return this.projectService.delete(projectId);
+    return this.projectService.delete(req, projectId);
   }
 }

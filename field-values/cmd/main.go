@@ -2,20 +2,58 @@ package main
 
 import (
 	"context"
+	"field-values/pkg/handler"
+	"field-values/pkg/repository"
+	"field-values/pkg/service"
 	"fmt"
 	"log"
 	"net/url"
 	"os"
-	"strconv"
 	"time"
+
+	_ "github.com/lib/pq"
+
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 
 	"github.com/joho/godotenv"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 func main() {
-	err := godotenv.Load(".env.development")
-	failOnError(err, "Error loading env variables")
+	if os.Getenv("GO_ENV") == "production" {
+		err := godotenv.Load(".env.production")
+		failOnError(err, "Error loading .env.production variables")
+	} else {
+		err := godotenv.Load(".env.development")
+		failOnError(err, "Error loading .env.development variables")
+	}
+
+	m, err := migrate.New(
+		"file://migrations",
+		migrateUrl(),
+	)
+	failOnError(err, "Error connecting to database for run migrations")
+	if err := m.Up(); err != nil && err.Error() != "no change" {
+		failOnError(err, err.Error())
+	}
+	m.Close()
+
+	db, err := repository.NewPostgresDB(repository.Config{
+		Host:     os.Getenv("POSTGRES_HOST"),
+		Port:     os.Getenv("POSTGRES_PORT"),
+		Username: os.Getenv("POSTGRES_USER"),
+		Password: os.Getenv("POSTGRES_PASSWORD"),
+		DBName:   os.Getenv("POSTGRES_DB"),
+		SSLMode:  os.Getenv("POSTGRES_SSLMODE"),
+	})
+	failOnError(err, "Failed to initialize db")
+	defer db.Close()
+
+	repos := repository.NewRepository(db)
+	services := service.NewService(repos)
+	handlers := handler.NewHandler(services)
 
 	conn, err := amqp.Dial(rabbitUrl())
 	failOnError(err, "Failed to connect to RabbitMQ")
@@ -53,29 +91,24 @@ func main() {
 		go func() {
 			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 			defer cancel()
-			for d := range msgs {
-				fmt.Println("request happend")
+			for delivery := range msgs {
 
-				// time.Sleep(time.Second * 3)
-
-				fmt.Println(string(d.Body))
-
-				response := 123
+				response := handlers.Route(delivery.Body)
 
 				err = ch.PublishWithContext(ctx,
 					"",
-					d.ReplyTo,
+					delivery.ReplyTo,
 					false,
 					false,
 					amqp.Publishing{
 						ContentType:   "application/json",
-						CorrelationId: d.CorrelationId,
-						Body:          []byte(strconv.Itoa(response)),
+						CorrelationId: delivery.CorrelationId,
+						Body:          response,
 					},
 				)
 				failOnError(err, "Failed to publish a message")
 
-				d.Ack(false)
+				delivery.Ack(false)
 			}
 		}()
 	}
@@ -98,5 +131,17 @@ func rabbitUrl() string {
 		url.QueryEscape(os.Getenv("RABBITMQ_HOST")),
 		url.QueryEscape(os.Getenv("RABBITMQ_PORT")),
 		url.QueryEscape(os.Getenv("RABBITMQ_DEFAULT_VHOST")),
+	)
+}
+
+func migrateUrl() string {
+	return fmt.Sprintf(
+		"postgres://%s:%s@%s:%s/%s?sslmode=%s",
+		url.QueryEscape(os.Getenv("POSTGRES_USER")),
+		url.QueryEscape(os.Getenv("POSTGRES_PASSWORD")),
+		url.QueryEscape(os.Getenv("POSTGRES_HOST")),
+		url.QueryEscape(os.Getenv("POSTGRES_PORT")),
+		url.QueryEscape(os.Getenv("POSTGRES_DB")),
+		url.QueryEscape(os.Getenv("POSTGRES_SSLMODE")),
 	)
 }
