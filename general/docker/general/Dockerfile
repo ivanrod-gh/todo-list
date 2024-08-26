@@ -1,6 +1,6 @@
 FROM node:20.13.1-alpine
 
-ENV NODE_ROOT="/var/www/node-server07-general"
+ENV NODE_ROOT="/var/www/todo-list-general"
 RUN mkdir -p $NODE_ROOT
 WORKDIR $NODE_ROOT
 

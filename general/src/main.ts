@@ -32,7 +32,7 @@ async function start() {
   await app.startAllMicroservices();
   
   const config = new DocumentBuilder()
-    .setTitle('Тестовый node-server07 на фреймровке Nest. Сервис general')
+    .setTitle('Todo List на фреймровке Nest. Сервис general')
     .setDescription('Документация на REST API')
     .setVersion('1.0.0')
     .addTag('ivanrod-gh')

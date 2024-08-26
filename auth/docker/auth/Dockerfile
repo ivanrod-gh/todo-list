@@ -1,6 +1,6 @@
 FROM node:20.13.1-alpine
 
-ENV NODE_ROOT="/var/www/node-server07-auth"
+ENV NODE_ROOT="/var/www/todo-list-auth"
 RUN mkdir -p $NODE_ROOT
 WORKDIR $NODE_ROOT
 
